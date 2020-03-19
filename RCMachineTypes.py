@@ -1,5 +1,8 @@
 from queue import Queue
 
+from RCResourceTypes import IngotResource
+from RCResources import EmptyIngotResource
+
 
 class GenericMachine(object):
     # generic class for all machines
@@ -43,7 +46,7 @@ class GenericMachine(object):
         # returns a tuple of tuples with the corners of the machine ((x_left, y_top), (x_right, y_bottom))
         return self.position, (self.position[0] + self.size[0] - 1, self.position[1] + self.size[1] - 1)
 
-    def get_touching_tiles(self):
+    def get_tiles_outputted_to(self):
         # returns a list of tiles touching the machine, will return out of bounds of board - need to check outside
         possible_tiles = []
         for x in range(self.position[0], self.position[0] + self.size[0] - 1):
@@ -68,7 +71,15 @@ class GenericMachine(object):
         else:
             return False
 
-        
+    def is_touching(self, position):
+        # takes (x, y) tuple and sees if machine is overlapping the point
+        if (self.position[0] <= position[0] >= self.position[0] + self.size[0] - 1 and
+                self.position[1] <= position[1] >= self.position[1] + self.size[1] - 1):
+            return True
+        else:
+            return False
+
+
 class ProcessingMachine(GenericMachine):
     # class for machines with input and output
 
@@ -113,21 +124,14 @@ class ProcessingMachine(GenericMachine):
                 self.inventory[self.resource_out] += 1  # place resource into inventory for output
 
     def output_item(self):
-        # attempts to output item from inventory, returning item
-        # TODO above this class need a func to place item into correct tile
-        out_resource_count = self.inventory[self.resource_out]
-        if out_resource_count > 0:
-            self.inventory[self.resource_out] -= 1
-            return self.resource_out
-        else:
-            return False
-
-    def is_output_ready(self):
-        # checks if machine has the output item in the inventory
+        # attempts to output item from inventory to the first machine in the output_machines
         if self.inventory[self.resource_out] > 0:
-            return True
-        else:
-            return False
+            # pass to first item in output_machines that accepts it, and roll machine list
+            for output_machine in self.output_machines:
+                if output_machine.input_item(self.resource_out):
+                    self.inventory[self.resource_out] -= 1
+                    break
+        self.shift_output_machines()
 
 
 class ExtractingMachine(ProcessingMachine):
@@ -142,13 +146,6 @@ class ExtractingMachine(ProcessingMachine):
         if self.timer % self.speed == 0 and self.inventory[self.resource_out] < self.max_capacity[self.resource_out]:
             self.inventory[self.resource_out] += 1  # place resource into inventory for output
 
-    def is_output_ready(self):
-        # checks if machine has the output item in the inventory
-        if self.inventory[self.resource_out] > 0:
-            return True
-        else:
-            return False
-
 
 class ConveyorMachine(GenericMachine):
     # for conveyors, custom inventory, rendering
@@ -161,36 +158,46 @@ class ConveyorMachine(GenericMachine):
         super().__init__(position)
         self.facing = facing  # (x, y) tuple of offset
 
-        self.inventory = Queue(maxsize=self.max_capacity)
-        [self.inventory.put(None) for _ in range(self.max_capacity)]  # pre-populate with empty
+        self.inventory = []
+        [self.inventory.append(EmptyIngotResource) for _ in range(self.max_capacity)]  # pre-populate with empty
         self.cur_tick_inputted = False
 
-    def get_touching_tiles(self):
+    def get_tiles_outputted_to(self):
         # gets the coordinates of the block that this conveyor outputs to - override for list of len = 1 in conveyors
         x_output = self.position[0] + self.size[0] - 1 + self.facing[0]
         y_output = self.position[1] + self.size[1] - 1 + self.facing[1]
 
-        return [x_output, y_output]
+        return [(x_output, y_output)]
 
     def input_item(self, item):
         # accept input to the conveyor, add to queue, set flag that there has been an input this tick
-        if not self.inventory.full():
-            self.inventory.put(item, block=False)  # do not block program
+        if len(self.inventory) < 10:
+            self.inventory.append(item)
             self.cur_tick_inputted = True  # set flag so tick function knows not to add empty item
             return True
         else:
             return False
 
     def output_item(self):
-        # return the oldest item, or false if there is an empty conveyor slot
-        output_item = self.inventory.get(block=False)  # do not block program - automatically pops the first item
-        if output_item is not None:
-            return output_item
-        else:
-            return False
+        # output the oldest item to the output machine if not an EmptyIngotResource
+        if not isinstance(self.inventory[0], EmptyIngotResource):
+            # pass to first item in output_machines that accepts it, and roll machine list
+            for output_machine in self.output_machines:
+                if output_machine.input_item(self.inventory[0]):
+                    self.inventory.pop(0)
+                    break
+        self.shift_output_machines()
 
     def machine_process(self):
-        # as output_item automatically pops the last item, simply fill conveyor back up to full if not full
-        if not self.inventory.full():
-            self.inventory.put(None)
+        # shifts items on conveyor forwards if there are EmptyIngotResources at the front
+        if isinstance(self.inventory[0], EmptyIngotResource):
+            self.inventory.pop(0)
+            self.inventory.append(EmptyIngotResource)
+
+    def check_accept_resource(self, resource):
+        # override, always accept ingot resources
+        if isinstance(resource, IngotResource):
+            return True
+        else:
+            return False
 

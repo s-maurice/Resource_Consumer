@@ -23,7 +23,7 @@ class ResourceConsumerGame(object):
         # selection_start is a tuple (x, y) of where the top left corner of the selection is
         # selection_end is a tuple (x, y) of where the bottom right corner of the selection is
         # mostly a copy of tiles_occupied() in GenericMachine and is_collision()
-        # TODO replace with boundary checking, use GenericMachine.get_bounds()
+        # TODO replace with boundary checking
 
         selection_tiles = []
         for x in range(selection_start[0], selection_end[0]):
@@ -43,22 +43,27 @@ class ResourceConsumerGame(object):
         # check if inventory has enough materials to build machine and that there are no collisions
         if machine.build_cost_satisfied(self.inventory) and not self.is_collision(machine):
             # update the output list of all the touching machines and add this machine to output list - if applicable
-            touching_tiles = machine.get_touching_tiles()
+            # when machine is a conveyor, get_tiles_outputted_to() is overwritten to only check the faced block
+            outputting_to = machine.get_tiles_outputted_to()
             for update_machine in self.placed_objects:
-                if update_machine.
-                if update_machine.check_accept_resource(machine.resource_out):
-                    # update_machine can accept machine's output
-
-
-            self.placed_objects.append(machine)
-
+                if any([update_machine.is_touching(tile) for tile in outputting_to]):  # touching
+                    if update_machine.check_accept_resource(machine.resource_out):  # can accept resource
+                        machine.output_machines.append(update_machine)  # machine outputs to update_machine
+                    if machine.check_accept_resource(update_machine.resource_out): # can accept resource
+                        # first, check if update_machine is a conveyor, and handle it's directional output
+                        if isinstance(update_machine, ConveyorMachine):
+                            if any([machine.is_touching(tile) for tile in update_machine.get_tiles_outputted_to()]):
+                                update_machine.output_machines.append(machine)  # conveyor outputs to machine
+                        else:
+                            update_machine.output_machines.append(machine)  # update_machine outputs to machine
+            self.placed_objects.append(machine)  # add machine to placed_object list
             return True
         else:
             return False
 
     def is_collision(self, machine):
         # checks if the given machine collides with any of the placed placed_objects
-        # TODO replace with boundary checking, use GenericMachine.get_bounds()
+        # TODO replace with boundary checking
         machine_tiles = machine.tiles_occupied()
 
         for placed_object in self.placed_objects:
@@ -71,11 +76,11 @@ class ResourceConsumerGame(object):
     def tick_game(self):
         # called every game tick, ticks all the machines and increments the tick
 
-        # handle items moving between machines
-        placed_object: ProcessingMachine
-        for placed_object in self.placed_objects:
-            if placed_object is not None:
-                    if placed_object.is_output_ready():
-                        for possible_output in random.shuffle(placed_object.get_touching_tiles()):
+        for machine in self.placed_objects:
+            machine.output_item()  # machine automatically select machine to output to if able
+        for machine in self.placed_objects:
+            machine.machine_process()  # machines do work
+
+        self.tick += 1
 
 

@@ -1,6 +1,11 @@
 from RCResourceTypes import IngotResource
 
 
+class EmptyIngotResource(IngotResource):
+    image_name = "none"
+    resource_name = "none"
+
+
 class Titanium(IngotResource):
     image_name = "titanium"
     resource_name = "Titanium"
