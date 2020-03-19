@@ -24,20 +24,24 @@ class ResourceConsumerGame(object):
         # selection_end is a tuple (x, y) of where the bottom right corner of the selection is
         # mostly a modified version of is_collision() below
 
+        # to avoid concurrent modification problems, create new list of objects to keep
+        new_placed_objects = []
+
         machine_min_x = selection_start[0]
         machine_max_x = selection_end[0]
         machine_min_y = selection_start[1]
         machine_max_y = selection_end[1]
 
-        for placed_object_index, placed_object in enumerate(self.placed_objects):
+        for placed_object in self.placed_objects:
             placed_min_x = placed_object.position[0]
             placed_max_x = placed_object.position[0] + placed_object.size[0] - 1
             placed_min_y = placed_object.position[1]
             placed_max_y = placed_object.position[1] + placed_object.size[1] - 1
 
-            if ((placed_max_x >= machine_min_x or placed_min_x <= machine_max_x) and
+            if not ((placed_max_x >= machine_min_x or placed_min_x <= machine_max_x) and
                     (placed_max_y >= machine_min_y or placed_min_y <= machine_max_y)):
-                self.placed_objects.pop(placed_object_index)  # remove if there is an intersection (concurrent mod)
+                new_placed_objects.append(placed_object)  # no collision, so append
+        self.placed_objects = new_placed_objects
 
     def build_tile(self, machine):
         # takes a prototype machine object - already initialised with position, and checks requirements
