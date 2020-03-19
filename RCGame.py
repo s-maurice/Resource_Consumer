@@ -22,18 +22,22 @@ class ResourceConsumerGame(object):
     def dismantle_selection(self, selection_start, selection_end):
         # selection_start is a tuple (x, y) of where the top left corner of the selection is
         # selection_end is a tuple (x, y) of where the bottom right corner of the selection is
-        # mostly a copy of tiles_occupied() in GenericMachine and is_collision()
-        # TODO replace with boundary checking
+        # mostly a modified version of is_collision() below
 
-        selection_tiles = []
-        for x in range(selection_start[0], selection_end[0]):
-            for y in range(selection_start[1], selection_end[1]):
-                selection_tiles.append((x, y))
+        machine_min_x = selection_start[0]
+        machine_max_x = selection_end[0]
+        machine_min_y = selection_start[1]
+        machine_max_y = selection_end[1]
 
         for placed_object_index, placed_object in enumerate(self.placed_objects):
-            for selection_tile in selection_tiles:
-                if selection_tile in placed_object.tiles_occupied():
-                    self.placed_objects.pop(placed_object_index)  # remove if there is an intersection
+            placed_min_x = placed_object.position[0]
+            placed_max_x = placed_object.position[0] + placed_object.size[0] - 1
+            placed_min_y = placed_object.position[1]
+            placed_max_y = placed_object.position[1] + placed_object.size[1] - 1
+
+            if ((placed_max_x >= machine_min_x or placed_min_x <= machine_max_x) and
+                    (placed_max_y >= machine_min_y or placed_min_y <= machine_max_y)):
+                self.placed_objects.pop(placed_object_index)  # remove if there is an intersection (concurrent mod)
 
     def build_tile(self, machine):
         # takes a prototype machine object - already initialised with position, and checks requirements
@@ -63,13 +67,21 @@ class ResourceConsumerGame(object):
 
     def is_collision(self, machine):
         # checks if the given machine collides with any of the placed placed_objects
-        # TODO replace with boundary checking
-        machine_tiles = machine.tiles_occupied()
+
+        machine_min_x = machine.position[0]
+        machine_max_x = machine.position[0] + machine.size[0] - 1
+        machine_min_y = machine.position[1]
+        machine_max_y = machine.position[1] + machine.size[1] - 1
 
         for placed_object in self.placed_objects:
-            for machine_tile in machine_tiles:
-                if machine_tile in placed_object.tiles_occupied():
-                    return True
+            placed_min_x = placed_object.position[0]
+            placed_max_x = placed_object.position[0] + placed_object.size[0] - 1
+            placed_min_y = placed_object.position[1]
+            placed_max_y = placed_object.position[1] + placed_object.size[1] - 1
+
+            if ((placed_max_x >= machine_min_x or placed_min_x <= machine_max_x) and
+                    (placed_max_y >= machine_min_y or placed_min_y <= machine_max_y)):
+                return True
         else:
             return False
 
