@@ -1,7 +1,12 @@
 import asyncio
 
 
-async def tcp_echo_client(message):
+writer = None
+reader = None
+
+
+async def connect_to_server(message):
+    global writer, reader
     reader, writer = await asyncio.open_connection('127.0.0.1', 8888)
 
     print(f'Send: {message!r}')
@@ -10,7 +15,24 @@ async def tcp_echo_client(message):
     data = await reader.read(100)
     print(f'Received: {data.decode()!r}')
 
-    print('Close the connection')
-    writer.close()
+    await asyncio.sleep(2)
 
-asyncio.run(tcp_echo_client('Hello World!2'))
+
+async def get_tick(message):
+    while True:
+        if reader is not None and writer is not None:
+            print(f'Send: {message!r}')
+            writer.write(message.encode())
+
+            data = await reader.read(100)
+            print(f'Received: {data.decode()!r}')
+
+        await asyncio.sleep(2)
+
+
+async def main():
+    await connect_to_server("im 2 connect")
+    task2 = asyncio.create_task(get_tick('im 2'))
+    await task2
+
+asyncio.run(main())
