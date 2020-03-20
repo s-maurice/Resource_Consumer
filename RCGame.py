@@ -1,5 +1,3 @@
-from random import random
-
 import numpy as np
 
 from RCMachineTypes import *

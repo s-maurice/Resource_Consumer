@@ -14,10 +14,13 @@ async def connect_to_server(message):
     data = await reader.read(100)
     print(f'Received: {data.decode()!r}')
 
-    await asyncio.sleep(2)
+    # once connection has been established, create and run the communication task
+    communication_task = asyncio.create_task(get_tick())
+    await communication_task
 
 
-async def get_tick(message):
+async def get_tick():
+    message = "hi"
     while True:
         if reader is not None and writer is not None:
             print(f'Send: {message!r}')
@@ -30,11 +33,7 @@ async def get_tick(message):
 
 
 async def main():
-    # task = asyncio.create_task(connect_to_server('im 1 connect'))
-    await connect_to_server("im 1 connect")
-    task2 = asyncio.create_task(get_tick('im 1'))
-    # await task
-    await task2
-
+    networking_task = asyncio.create_task(connect_to_server('im 1 connect'))
+    await networking_task
 
 asyncio.run(main())

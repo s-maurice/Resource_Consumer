@@ -19,8 +19,8 @@ async def establish_connection(reader, writer):
     # create and run task for the freshly connected
     # this allows for clients to disconnect without crashing server
     # wrap in try to handle the task exception when the connections are closed
-    connection_task = asyncio.create_task(handle_connection(reader, writer))
-    await connection_task
+    communication_task = asyncio.create_task(handle_connection(reader, writer))
+    await communication_task
 
 
 async def handle_connection(reader, writer):
