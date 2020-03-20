@@ -1,6 +1,5 @@
 import asyncio
 
-
 writer = None
 reader = None
 
@@ -31,8 +30,11 @@ async def get_tick(message):
 
 
 async def main():
+    # task = asyncio.create_task(connect_to_server('im 1 connect'))
     await connect_to_server("im 2 connect")
     task2 = asyncio.create_task(get_tick('im 2'))
+    # await task
     await task2
+
 
 asyncio.run(main())

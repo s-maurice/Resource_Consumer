@@ -2,7 +2,7 @@ import asyncio
 import time
 
 tick = 0
-read_write = []
+read_write_tasks = []
 
 
 async def establish_connection(reader, writer):
@@ -16,20 +16,23 @@ async def establish_connection(reader, writer):
     writer.write(str(in_message).encode())
     await writer.drain()
 
-    read_write.append((reader, writer))
+    # create and run task for the freshly connected
+    # this allows for clients to disconnect without crashing server
+    # wrap in try to handle the task exception when the connections are closed
+    connection_task = asyncio.create_task(handle_connection(reader, writer))
+    await connection_task
 
 
-async def handle_connections():
+async def handle_connection(reader, writer):
     while True:
-        for reader, writer in read_write:
-            data = await reader.read(100)
-            message = data.decode()
-            addr = writer.get_extra_info('peername')
-            print(f"Received {message!r} from {addr!r}")
+        data = await reader.read(100)
+        message = data.decode()
+        addr = writer.get_extra_info('peername')
+        print(f"Received {message!r} from {addr!r}")
 
-            print(f"Send: {tick!r}")
-            writer.write(str(tick).encode())
-            await writer.drain()
+        print(f"Send: {tick!r}")
+        writer.write(str(tick).encode())
+        await writer.drain()
         await asyncio.sleep(2)
 
 
@@ -38,7 +41,7 @@ async def loop():
     while True:
         await asyncio.sleep(2)
         tick += 1
-        print("tick:", tick, len(read_write))
+        print("tick:", tick)
 
 
 async def main():
@@ -54,11 +57,9 @@ async def main():
 async def bigmain():
     task1 = asyncio.create_task(loop())
     task2 = asyncio.create_task(main())
-    task3 = asyncio.create_task(handle_connections())
 
     await task1
     await task2
-    await task3
 
 asyncio.run(bigmain())
 
