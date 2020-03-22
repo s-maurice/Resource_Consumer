@@ -2,8 +2,9 @@ from RCMachineTypes import ProcessingMachine, ExtractingMachine, GenericMachine
 from RCResources import Sand, Lead, Glass, Titanium
 
 
-class Machine1(ProcessingMachine):
-    image_name = "machine1"
+class Processor1(ProcessingMachine):
+    id = 1
+    image_name = "Processor1"
 
     size = (2, 2)
     resource_in = {Sand: 1}  # dict with RCResource and number needed
@@ -15,6 +16,7 @@ class Machine1(ProcessingMachine):
 
 
 class Extractor1(ExtractingMachine):
+    id = 2
     image_name = "extractor1"
 
     size = (2, 2)
@@ -27,6 +29,7 @@ class Extractor1(ExtractingMachine):
 
 
 class Rock1(GenericMachine):
+    id = 3
     image_name = "rock"
 
     size = (1, 1)

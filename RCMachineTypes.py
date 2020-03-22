@@ -1,3 +1,4 @@
+import json
 from queue import Queue
 
 from RCResourceTypes import IngotResource
@@ -6,6 +7,7 @@ from RCResources import EmptyIngotResource
 
 class GenericMachine(object):
     # generic class for all machines
+    id = 0
     image_name = "none"
 
     size = (1, 1)
@@ -20,6 +22,7 @@ class GenericMachine(object):
     def __init__(self, position):
         self.image_location = "mineindustry_sprites/foreground/{}.png".format(self.image_name)
 
+        self.inventory = {}
         self.timer = 0
         self.rotation = 0
         self.position = position
@@ -78,6 +81,27 @@ class GenericMachine(object):
             return True
         else:
             return False
+
+    def get_serialisable_inventory(self):
+        # converts the inventory into a serialisable dict
+        inv = {}
+        for key, item in self.inventory.items():
+            inv[key.id] = item
+        return inv
+
+    def to_json(self):
+        # serialises the machine into the json format that can be rebuilt
+
+        # create a dict with the needed attributes for json encoding
+        details = {
+            "id": self.id,
+            "pos": self.position,
+            "time": self.timer,
+            "rot": self.rotation,
+            "inv": self.get_serialisable_inventory(),
+            "outmachines": self.output_machines}
+
+        return json.dumps(details)
 
 
 class ProcessingMachine(GenericMachine):
@@ -158,7 +182,7 @@ class ConveyorMachine(GenericMachine):
         super().__init__(position)
         self.facing = facing  # (x, y) tuple of offset
 
-        self.inventory = []
+        self.inventory = []  # inventory created in super().__init__() already, but here needs to be list
         [self.inventory.append(EmptyIngotResource) for _ in range(self.max_capacity)]  # pre-populate with empty
         self.cur_tick_inputted = False
 
@@ -200,4 +224,8 @@ class ConveyorMachine(GenericMachine):
             return True
         else:
             return False
+
+    def get_serialisable_inventory(self):
+        # override, since the inventory is a list in this case
+        return [i.id for i in self.inventory]
 

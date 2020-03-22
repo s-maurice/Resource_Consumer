@@ -1,4 +1,5 @@
 class IngotResource(object):
+    id = 0
     image_name = "none"
     resource_name = "none"
 
@@ -7,6 +8,7 @@ class IngotResource(object):
 
 
 class ContainerResource(object):  # contains multiple ingot resources
+    id = 0
     image_name = "none"
     resource_name = "none"
 
