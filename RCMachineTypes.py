@@ -99,7 +99,8 @@ class GenericMachine(object):
             "time": self.timer,
             "rot": self.rotation,
             "inv": self.get_serialisable_inventory(),
-            "outmachines": self.output_machines}
+            # "outmachines": self.output_machines  # client and server build upon adding
+        }
 
         return json.dumps(details)
 

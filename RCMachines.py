@@ -35,3 +35,9 @@ class Rock1(GenericMachine):
     size = (1, 1)
     speed = 0
     build_cost = {}
+
+
+machine_id_lookup = {Processor1.id: Processor1,
+                     Extractor1.id: Extractor1,
+                     Rock1.id: Rock1
+                     }
