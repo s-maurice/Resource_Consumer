@@ -3,6 +3,7 @@ import json
 import hashlib
 
 from RCGame import ResourceConsumerGame
+from SocketProtocol import protocol_read, protocol_write
 
 
 class ResourceConsumerServer(object):
@@ -18,8 +19,8 @@ class ResourceConsumerServer(object):
 
     async def establish_connection(self, reader, writer):
         # always runs, looking for new clients to connect
-        data = await reader.read(100)
-        password_attempt = data.decode()
+        password_attempt = await protocol_read(reader)  # need timeout, can be hijacked so no new clients can connect
+
         addr = writer.get_extra_info('peername')
         print("FROM {} got pw attempt {}".format(addr, password_attempt))
 
@@ -30,7 +31,7 @@ class ResourceConsumerServer(object):
 
             # build the details to send on connection
             # game_map is only sent when it is a custom game_map, otherwise the map can be loaded client-side
-            if self.rcg.game_map.id != 0:
+            if self.rcg.game_map.id == 0:
                 initial_map = self.rcg.game_map.to_json_serialisable()
             else:
                 initial_map = {"id": self.rcg.game_map.id}
@@ -45,9 +46,7 @@ class ResourceConsumerServer(object):
 
             # encode and send out
             initial_json = json.dumps(initial_dict)
-
-            writer.write(initial_json.encode())
-            await writer.drain()
+            await protocol_write(writer, initial_json)
 
             # create and run task for the freshly connected
             # this allows for clients to disconnect without crashing server
@@ -61,21 +60,19 @@ class ResourceConsumerServer(object):
             initial_dict = {"pw_auth": False}
             initial_json = json.dumps(initial_dict)
 
-            writer.write(initial_json.encode())
-            await writer.drain()
+            await protocol_write(writer, initial_json)
 
     async def handle_existing_connection(self, reader, writer):
         # one of these exists for each of the connected clients
         # infinitely loops, handling the main connection with the clients
         while True:
-            data = await reader.read(100)
-            message = data.decode()
+            message = await protocol_read(reader)
+
             address = writer.get_extra_info('peername')
             print("Received {} from {}".format(message, address))
 
             print("Sending tick: ", self.rcg.tick)
-            writer.write(str(self.rcg.tick).encode())
-            await writer.drain()
+            await protocol_write(writer, str(self.rcg.tick))
 
             await asyncio.sleep(2)
 

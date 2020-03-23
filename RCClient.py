@@ -6,6 +6,7 @@ from RCGame import ResourceConsumerGame
 from RCMachines import machine_id_lookup
 from RCMaps import *
 from RCResources import resource_id_lookup
+from SocketProtocol import protocol_read, protocol_write
 
 
 class ResourceConsumerClient(object):
@@ -29,10 +30,10 @@ class ResourceConsumerClient(object):
             password_hashed = hashlib.sha224(password_attempt.encode()).hexdigest()
 
             print("Send pw", password_hashed)
-            writer.write(password_hashed.encode())
+            await protocol_write(writer, password_hashed)
 
-            data = await reader.read(100)
-            print("Receive", data.decode())
+            data = await protocol_read(reader)
+            print("Receive", data)
 
             initial_dict = json.loads(data)
             # check if password is accepted
@@ -44,20 +45,23 @@ class ResourceConsumerClient(object):
                 # TODO re-builder funcs for all the things that need rebuilding
 
                 # handle map
-                map_id = initial_dict.get("map", -1)
-                if map_id == 0:
-                    # custom map, need to build
-                    map_obj = RCMap()
-                    map_obj.background_map = initial_dict["bg"]
-                    map_obj.background_addition_map = initial_dict["bga"]
-                    # placed objects handled later
-                    self.rcg.game_map = map_obj
-                elif map_id > 0:
-                    # defined map in the RCMaps
-                    self.rcg.game_map = map_id_lookup.get(map_id)
-                else:
-                    # no map sent, error
-                    pass
+                game_map_dict = initial_dict.get("game_map", None)
+                if game_map_dict is not None:
+                    map_id = game_map_dict.get("id", -1)
+                    print(map_id)
+                    if map_id == 0:
+                        # custom map, need to build
+                        map_obj = RCMap()
+                        map_obj.background_map = np.array(game_map_dict["bg"])
+                        map_obj.background_addition_map = np.array(game_map_dict["bga"])
+                        # placed objects handled later
+                        self.rcg.game_map = map_obj
+                    elif map_id > 0:
+                        # defined map in the RCMaps
+                        self.rcg.game_map = map_id_lookup.get(map_id)
+                    else:
+                        # no map sent, error
+                        pass
 
                 # handle placed objects
                 for machine_dict in initial_dict.get("placed_obj"):
@@ -94,10 +98,10 @@ class ResourceConsumerClient(object):
         # infinitely loops, handling the main connection with the server
         while True:
             print("Send", self.sending_message)
-            self.writer.write(self.sending_message.encode())
+            await protocol_write(self.writer, self.sending_message)
 
-            data = await self.reader.read(100)
-            print("Receive", data.decode())
+            data = await protocol_read(self.reader)
+            print("Receive", data)
 
             await asyncio.sleep(2)
 
