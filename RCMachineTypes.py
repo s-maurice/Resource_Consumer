@@ -16,12 +16,12 @@ class GenericMachine(object):
     resource_out = None  # resourceconsumeritem
     max_capacity = {}  # dict with resourceconsumeritem and max capacity, include resource_out
 
-    def __init__(self, position):
+    def __init__(self, position, rotation):
         self.image_location = "mineindustry_sprites/foreground/{}.png".format(self.image_name)
 
         self.inventory = {}
         self.timer = 0
-        self.rotation = 0
+        self.rotation = rotation
         self.position = position
 
         self.output_machines = []  # list of the machines that this machine outputs to

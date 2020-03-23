@@ -21,6 +21,8 @@ class ResourceConsumerServer(object):
         writer.write(str(in_message).encode())
         await writer.drain()
 
+        # password checking?
+
         # build the details to send on connection
         # game_map is only sent when it is a custom game_map, otherwise the map can be loaded client-side
         if self.rcg.game_map.id != 0:

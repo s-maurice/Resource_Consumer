@@ -11,7 +11,7 @@ class ResourceConsumerGame(object):
     def __init__(self):
         self.game_map = RandomMap()  # game_map object
 
-        self.placed_objects = []  # list of all the RCMachines
+        self.placed_objects = self.game_map.placed_objects  # list of all the RCMachines, initially inherit from the map
 
         self.inventory = {}  # dict of RCResources and number
 
@@ -52,12 +52,12 @@ class ResourceConsumerGame(object):
         else:
             return False
 
-    def build_tile(self, machine):
+    def build_tile(self, machine, ignore_check=False):
         # takes a prototype machine object - already initialised with position, and checks requirements
         # if all requirements are satisfied, append to placed_objects and return true, otherwise false
         assert isinstance(machine, GenericMachine)
 
-        if self.can_build_machine(machine):
+        if self.can_build_machine(machine) or ignore_check:
             # update the output list of all the touching machines and add this machine to output list - if applicable
             # when machine is a conveyor, get_tiles_outputted_to() is overwritten to only check the faced block
             outputting_to = machine.get_tiles_outputted_to()
@@ -121,10 +121,9 @@ class ResourceConsumerGame(object):
         assert machine_id is not None
 
         machine = machine_id_lookup.get(machine_id)  # get correct machine type
-        machine = machine((machine_dict.get("pos")))  # call constructor
+        machine = machine((machine_dict.get("pos")), machine_dict.get("rot"))  # call constructor
         # place in other attributes
         machine.time = machine_dict.get("time")
-        machine.rotation = machine_dict.get("rot")
 
         # handle inventory
         for key, item in machine_dict.get("inv"):
