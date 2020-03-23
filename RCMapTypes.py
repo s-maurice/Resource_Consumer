@@ -31,4 +31,5 @@ class RandomMap(RCMap):
 
         self.size = (20, 20)
         self.background_map = np.ones(self.size, dtype=int)  # bg tiles
-        self.background_addition_map = np.random.randint(0, 1, size=self.size, dtype=int)  # bg extras (ores)
+        self.background_addition_map = np.random.randint(0, 2, size=self.size, dtype=int)  # bg extras (ores)
+
