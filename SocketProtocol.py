@@ -1,7 +1,7 @@
 from asyncio import StreamReader, StreamWriter, Protocol
 
 # possibly extend asyncio.Protocol instead
-# sending eof auto closes the streams
+# sending eof auto closes the streams - so that won't wonk
 
 
 async def protocol_read(reader: StreamReader):
