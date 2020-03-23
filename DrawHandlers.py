@@ -15,7 +15,8 @@ class BaseDrawHandler(pygame.sprite.Sprite):
         self.full_size = self.full_size_image.get_size()
 
         # rotate according to rotation - TODO check if center rotation
-        self.full_size_image = pygame.transform.rotate(self.full_size_image, 90*rotation)
+        self.rotation = 0  # base rotation
+        self.rotate(rotation)  # this will update self.rotation to the correct value
 
         self.current_size_image = self.full_size_image
         self.current_size = self.full_size
@@ -35,6 +36,15 @@ class BaseDrawHandler(pygame.sprite.Sprite):
 
         # can add out of bound checking to avoid drawing off-screen sprites
         surface.blit(self.current_size_image, (draw_pos_x, draw_pos_y))
+
+    def rotate(self, rotation):
+        # sets the rotation to the given rotation range(0, 3)
+        if self.rotation != rotation:
+            # calculate the rotation difference
+            rot_difference = rotation - self.rotation
+
+            self.full_size_image = pygame.transform.rotate(self.full_size_image, 90*rot_difference)
+            self.rotation = rotation
 
 
 class MachineDrawHandler(BaseDrawHandler):
