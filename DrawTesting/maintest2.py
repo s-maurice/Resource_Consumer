@@ -1,9 +1,6 @@
 import math
 
-import pygame
-import numpy as np
-
-from TileSprite import *
+from DrawTesting.TileSprite import *
 from InputHandler import InputHandler
 
 pygame.init()
