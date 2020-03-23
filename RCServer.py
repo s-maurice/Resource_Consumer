@@ -102,6 +102,7 @@ class ResourceConsumerServer(object):
         await networking_task
 
 
-rcs = ResourceConsumerServer()
-rcs.set_hashed_password("yeet")
-asyncio.run(rcs.main())
+if __name__ == "__main__":
+    rcs = ResourceConsumerServer()
+    rcs.set_hashed_password("yeet")
+    asyncio.run(rcs.main())
