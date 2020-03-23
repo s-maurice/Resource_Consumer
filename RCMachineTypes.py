@@ -22,6 +22,8 @@ class GenericMachine(object):
 
         self.inventory = {}
         self.timer = 0
+
+        assert 0 <= self.rotation <= 3
         self.rotation = rotation
         self.position = position
 
@@ -148,6 +150,9 @@ class ProcessingMachine(GenericMachine):
                         self.inventory[key] -= self.resource_in.get(key, 0)
                 self.inventory[self.resource_out] += 1  # place resource into inventory for output
 
+        # at the end, increment the timer
+        self.timer += 1
+
     def output_item(self):
         # attempts to output item from inventory to the first machine in the output_machines
         if self.inventory[self.resource_out] > 0:
@@ -171,6 +176,9 @@ class ExtractingMachine(ProcessingMachine):
         if self.timer % self.speed == 0 and self.inventory[self.resource_out] < self.max_capacity[self.resource_out]:
             self.inventory[self.resource_out] += 1  # place resource into inventory for output
 
+        # at the end, increment the timer
+        self.timer += 1
+
 
 class ConveyorMachine(GenericMachine):
     # for conveyors, custom inventory, rendering
@@ -179,20 +187,34 @@ class ConveyorMachine(GenericMachine):
     speed = 10
     # for rendering, use stages and increment every tick - need to keep order of inventory - queue?
 
-    def __init__(self, position, facing):
-        super().__init__(position, facing)  # facing should be equal to the rotation
-        self.facing = facing  # (x, y) tuple of offset
+    def __init__(self, position, rotation):
+        super().__init__(position, rotation)
+        self.rotation = rotation  # range(0, 4) - from 0 to 3 - with 0 pointing up
 
         self.inventory = []  # inventory created in super().__init__() already, but here needs to be list
         [self.inventory.append(EmptyIngotResource) for _ in range(self.max_capacity)]  # pre-populate with empty
         self.cur_tick_inputted = False
 
-        self.draw_handler = ConveyorDrawHandler(self.image_location, self.position, facing)
+        self.draw_handler = ConveyorDrawHandler(self.image_location, self.position, rotation)
 
     def get_tiles_outputted_to(self):
-        # gets the coordinates of the block that this conveyor outputs to - override for list of len = 1 in conveyors
-        x_output = self.position[0] + self.size[0] - 1 + self.facing[0]
-        y_output = self.position[1] + self.size[1] - 1 + self.facing[1]
+        # gets the coordinates of the block that this conveyor outputs to - override for list of single position
+
+        # convert the rotation value from range(0, 4) to correct offsets
+        if self.rotation == 0:
+            facing = (0, -1)
+        elif self.rotation == 1:
+            facing = (1, 0)
+        elif self.rotation == 2:
+            facing = (0, -1)
+        elif self.rotation == 3:
+            facing = (-1, 0)
+        else:
+            print("Rotation out of legal range")
+            facing = (0, 0)
+
+        x_output = self.position[0] + self.size[0] - 1 + facing[0]
+        y_output = self.position[1] + self.size[1] - 1 + facing[1]
 
         return [(x_output, y_output)]
 
@@ -221,6 +243,9 @@ class ConveyorMachine(GenericMachine):
             self.inventory.pop(0)
             self.inventory.append(EmptyIngotResource)
 
+        # at the end, increment the timer
+        self.timer += 1
+
     def check_accept_resource(self, resource):
         # override, always accept ingot resources
         if isinstance(resource, IngotResource):
@@ -231,4 +256,3 @@ class ConveyorMachine(GenericMachine):
     def get_serialisable_inventory(self):
         # override, since the inventory is a list in this case
         return [i.id for i in self.inventory]
-
