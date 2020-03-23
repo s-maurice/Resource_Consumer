@@ -1,3 +1,4 @@
+from DrawHandlers import MachineDrawHandler, ConveyorDrawHandler
 from RCResourceTypes import IngotResource
 from RCResources import EmptyIngotResource
 
@@ -25,6 +26,8 @@ class GenericMachine(object):
         self.position = position
 
         self.output_machines = []  # list of the machines that this machine outputs to
+
+        self.draw_handler = MachineDrawHandler(self.image_location, position, rotation)
 
     def build_cost_satisfied(self, inventory_dict):
         # takes a dict of the materials the player has, and compares it to the required materials in the build_cost
@@ -109,8 +112,8 @@ class ProcessingMachine(GenericMachine):
     resource_out = None  # resourceconsumeritem
     max_capacity = {}  # dict with resourceconsumeritem and max capacity, include resource_out
 
-    def __init__(self, position):
-        super().__init__(position)
+    def __init__(self, position, rotation):
+        super().__init__(position, rotation)
 
         self.inventory = dict(zip(self.max_capacity.keys(), [0 for _ in range(len(self.max_capacity))]))  # all empty
 
@@ -177,12 +180,14 @@ class ConveyorMachine(GenericMachine):
     # for rendering, use stages and increment every tick - need to keep order of inventory - queue?
 
     def __init__(self, position, facing):
-        super().__init__(position)
+        super().__init__(position, facing)  # facing should be equal to the rotation
         self.facing = facing  # (x, y) tuple of offset
 
         self.inventory = []  # inventory created in super().__init__() already, but here needs to be list
         [self.inventory.append(EmptyIngotResource) for _ in range(self.max_capacity)]  # pre-populate with empty
         self.cur_tick_inputted = False
+
+        self.draw_handler = ConveyorDrawHandler(self.image_location, self.position, facing)
 
     def get_tiles_outputted_to(self):
         # gets the coordinates of the block that this conveyor outputs to - override for list of len = 1 in conveyors
