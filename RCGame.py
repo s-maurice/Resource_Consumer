@@ -1,20 +1,15 @@
 import numpy as np
-import json
 
 from RCMachineTypes import *
 from RCMachines import *
 from RCResourceTypes import *
 from RCResources import *
+from RCMapTypes import RandomMap
 
 
 class ResourceConsumerGame(object):
-    def __init__(self, size, server_mode):
-        self.size = size
-        self.server_mode = server_mode
-
-        # maps
-        self.background_map = np.ones(size, dtype=int)  # map for the background tiles
-        self.background_addition_map = np.random.randint(0, 1, size=size, dtype=int)  # map for background extras (ores)
+    def __init__(self):
+        self.game_map = RandomMap()  # game_map object
 
         self.placed_objects = []  # list of all the RCMachines
 
@@ -144,6 +139,13 @@ class ResourceConsumerGame(object):
             return self.placed_objects[-1]
         else:
             return False  # build failure - client sending un-buildable machines to server or client desync
+
+    def get_serialisable_inventory(self):
+        # converts the inventory into a serialisable dict
+        inv = {}
+        for key, item in self.inventory.items():
+            inv[key.id] = item
+        return inv
 
 
 

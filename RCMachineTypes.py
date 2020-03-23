@@ -1,6 +1,3 @@
-import json
-from queue import Queue
-
 from RCResourceTypes import IngotResource
 from RCResources import EmptyIngotResource
 
@@ -89,8 +86,8 @@ class GenericMachine(object):
             inv[key.id] = item
         return inv
 
-    def to_json(self):
-        # serialises the machine into the json format that can be rebuilt
+    def to_json_serialisable(self):
+        # returns a serialisable version of itself that can be rebuilt
 
         # create a dict with the needed attributes for json encoding
         details = {
@@ -102,7 +99,7 @@ class GenericMachine(object):
             # "outmachines": self.output_machines  # client and server build upon adding
         }
 
-        return json.dumps(details)
+        return details
 
 
 class ProcessingMachine(GenericMachine):

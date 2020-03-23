@@ -131,7 +131,7 @@ while run:
         # loop through the tiles, add 1 or -1 to increase the absolute value by 1 for looping - not inclusive
         for y in range(0, tile_pos_dif_y + y_diff_dir, y_diff_dir):
             for x in range(0, tile_pos_dif_x + x_diff_dir, x_diff_dir):
-                # check it fits within selection map before adding - checks simplified by ide
+                # check it fits within selection game_map before adding - checks simplified by ide
                 position = (down_tile_pos_x + x, down_tile_pos_y + y)
                 if selection_map.shape[0] > position[0] >= 0 and selection_map.shape[1] > position[1] >= 0:
                     selection_map[position[::-1]] = 1  # update the selection_map  # np.array indexed [y, x]

@@ -1,4 +1,5 @@
 import asyncio
+import json
 
 from RCGame import ResourceConsumerGame
 
@@ -6,7 +7,7 @@ from RCGame import ResourceConsumerGame
 class ResourceConsumerServer(object):
 
     def __init__(self):
-        self.rcg = ResourceConsumerGame((20, 20))
+        self.rcg = ResourceConsumerGame()
 
     async def establish_connection(self, reader, writer):
         # always runs, looking for new clients to connect
@@ -19,6 +20,21 @@ class ResourceConsumerServer(object):
         print(f"Send: {in_message!r}")
         writer.write(str(in_message).encode())
         await writer.drain()
+
+        # build the details to send on connection
+        # game_map is only sent when it is a custom game_map, otherwise the map can be loaded client-side
+        if self.rcg.game_map.id != 0:
+            initial_map = self.rcg.game_map.to_json_serialisable()
+        else:
+            initial_map = {"id": self.rcg.game_map.id}
+
+        initial_dict = {
+            "game_map": initial_map,
+            "placed_obj": [o.to_json_serialisable() for o in self.rcg.placed_objects],
+            "inv": self.rcg.get_serialisable_inventory(),
+            "tick": self.rcg.tick
+        }
+        initial_json = json.dumps(initial_dict)
 
         # create and run task for the freshly connected
         # this allows for clients to disconnect without crashing server
