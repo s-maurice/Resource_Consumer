@@ -1,5 +1,6 @@
 import asyncio
 import json
+import hashlib
 
 from RCGame import ResourceConsumerGame
 
@@ -8,41 +9,60 @@ class ResourceConsumerServer(object):
 
     def __init__(self):
         self.rcg = ResourceConsumerGame()
+        self.hashed_password = None
+
+    def set_hashed_password(self, password):
+        # takes password string and stores as class attribute
+        self.hashed_password = hashlib.sha224(password.encode()).hexdigest()
+        print("HASHED PW", self.hashed_password)
 
     async def establish_connection(self, reader, writer):
         # always runs, looking for new clients to connect
         data = await reader.read(100)
-        message = data.decode()
+        password_attempt = data.decode()
         addr = writer.get_extra_info('peername')
-        print(f"Received {message!r} from {addr!r}")
+        print("FROM {} got pw attempt {}".format(addr, password_attempt))
 
-        in_message = "you're in"
-        print(f"Send: {in_message!r}")
-        writer.write(str(in_message).encode())
-        await writer.drain()
+        # password checking
+        if self.hashed_password == password_attempt:
+            # on password success
+            print("{} PW PASS".format(addr))
 
-        # password checking?
+            # build the details to send on connection
+            # game_map is only sent when it is a custom game_map, otherwise the map can be loaded client-side
+            if self.rcg.game_map.id != 0:
+                initial_map = self.rcg.game_map.to_json_serialisable()
+            else:
+                initial_map = {"id": self.rcg.game_map.id}
 
-        # build the details to send on connection
-        # game_map is only sent when it is a custom game_map, otherwise the map can be loaded client-side
-        if self.rcg.game_map.id != 0:
-            initial_map = self.rcg.game_map.to_json_serialisable()
+            initial_dict = {
+                "pw_auth": True,
+                "game_map": initial_map,
+                "placed_obj": [o.to_json_serialisable() for o in self.rcg.placed_objects],
+                "inv": self.rcg.get_serialisable_inventory(),
+                "tick": self.rcg.tick
+            }
+
+            # encode and send out
+            initial_json = json.dumps(initial_dict)
+
+            writer.write(initial_json.encode())
+            await writer.drain()
+
+            # create and run task for the freshly connected
+            # this allows for clients to disconnect without crashing server
+            # wrap in try except to handle the task exception when the connections are closed
+            connection_task = asyncio.create_task(self.handle_existing_connection(reader, writer))
+            await connection_task
         else:
-            initial_map = {"id": self.rcg.game_map.id}
+            # on password fail
+            print("{} PW FAIL".format(addr))
 
-        initial_dict = {
-            "game_map": initial_map,
-            "placed_obj": [o.to_json_serialisable() for o in self.rcg.placed_objects],
-            "inv": self.rcg.get_serialisable_inventory(),
-            "tick": self.rcg.tick
-        }
-        initial_json = json.dumps(initial_dict)
+            initial_dict = {"pw_auth": False}
+            initial_json = json.dumps(initial_dict)
 
-        # create and run task for the freshly connected
-        # this allows for clients to disconnect without crashing server
-        # wrap in try except to handle the task exception when the connections are closed
-        connection_task = asyncio.create_task(self.handle_existing_connection(reader, writer))
-        await connection_task
+            writer.write(initial_json.encode())
+            await writer.drain()
 
     async def handle_existing_connection(self, reader, writer):
         # one of these exists for each of the connected clients
@@ -86,4 +106,5 @@ class ResourceConsumerServer(object):
 
 
 rcs = ResourceConsumerServer()
+rcs.set_hashed_password("yeet")
 asyncio.run(rcs.main())

@@ -1,4 +1,5 @@
 import asyncio
+import hashlib
 import json
 
 from RCGame import ResourceConsumerGame
@@ -13,66 +14,81 @@ class ResourceConsumerClient(object):
         self.reader = None
         self.writer = None
 
-        self.connection_message = "connection message"
+        self.TEMP_PW = "yeet"
         self.sending_message = "hi"
 
         self.rcg = None
 
     async def connect_to_server(self):
         # searches for and establishes initial connection with the server, returning the reader and writer for later use
-        reader, writer = await asyncio.open_connection('127.0.0.1', 8888)
+        while True:
+            reader, writer = await asyncio.open_connection('127.0.0.1', 8888)
 
-        print("Send", self.connection_message)
-        writer.write(self.connection_message.encode())
+            # hash password to compare
+            password_attempt = self.TEMP_PW
+            password_hashed = hashlib.sha224(password_attempt.encode()).hexdigest()
 
-        data = await reader.read(100)
-        print("Receive", data.decode())
+            print("Send pw", password_hashed)
+            writer.write(password_hashed.encode())
 
-        initial_dict = json.loads(data)
-        initial_dict = {}
-        # once the dict with initial details has been received, init RCGame and put in the details
-        self.rcg = ResourceConsumerGame()
+            data = await reader.read(100)
+            print("Receive", data.decode())
 
-        # TODO re-builder funcs for all the things that need rebuilding
+            initial_dict = json.loads(data)
+            # check if password is accepted
+            if initial_dict["pw_auth"]:
 
-        # handle map
-        map_id = initial_dict.get("map", 0)
-        if map_id == 0:
-            # custom map, need to build
-            map_obj = RCMap()
-            map_obj.background_map = initial_dict["bg"]
-            map_obj.background_addition_map = initial_dict["bga"]
-            # placed objects handled later
-            self.rcg.game_map = map_obj
-        else:
-            # defined map in the RCMaps
-            self.rcg.game_map = map_id_lookup.get(map_id)
+                # once the dict with initial details has been received, init RCGame and put in the details
+                self.rcg = ResourceConsumerGame()
 
-        # handle placed objects
-        for machine_dict in initial_dict.get("placed_obj"):
+                # TODO re-builder funcs for all the things that need rebuilding
 
-            machine = machine_id_lookup.get(machine_dict.get("id"))  # get correct machine type
-            machine = machine((machine_dict.get("pos")), machine_dict.get("rot"))  # call constructor
-            # place in other attributes
-            machine.time = machine_dict.get("time")
+                # handle map
+                map_id = initial_dict.get("map", -1)
+                if map_id == 0:
+                    # custom map, need to build
+                    map_obj = RCMap()
+                    map_obj.background_map = initial_dict["bg"]
+                    map_obj.background_addition_map = initial_dict["bga"]
+                    # placed objects handled later
+                    self.rcg.game_map = map_obj
+                elif map_id > 0:
+                    # defined map in the RCMaps
+                    self.rcg.game_map = map_id_lookup.get(map_id)
+                else:
+                    # no map sent, error
+                    pass
 
-            # handle machine's inventory
-            for key, item in machine_dict.get("inv"):
-                res = resource_id_lookup.get(key)
-                machine.inventory[res] = item
+                # handle placed objects
+                for machine_dict in initial_dict.get("placed_obj"):
 
-            # since initial build - ignore resource checks - this way the output_machines for the machines are built
-            self.rcg.build_tile(machine, ignore_check=True)
+                    machine = machine_id_lookup.get(machine_dict.get("id"))  # get correct machine type
+                    machine = machine((machine_dict.get("pos")), machine_dict.get("rot"))  # call constructor
+                    # place in other attributes
+                    machine.time = machine_dict.get("time")
 
-        # handle game inventory
-        for key, item in initial_dict.get("inv"):
-            res = resource_id_lookup.get(key)
-            self.rcg.inventory[res] = item
+                    # handle machine's inventory
+                    for key, item in machine_dict.get("inv"):
+                        res = resource_id_lookup.get(key)
+                        machine.inventory[res] = item
 
-        # handle tick
-        self.rcg.tick = initial_dict.get("tick")
+                    # since initial build - ignore resource checks
+                    # this way the output_machines for the machines are built by the client's game
+                    self.rcg.build_tile(machine, ignore_check=True)
 
-        return reader, writer
+                # handle game inventory
+                for key, item in initial_dict.get("inv"):
+                    res = resource_id_lookup.get(key)
+                    self.rcg.inventory[res] = item
+
+                # handle tick
+                self.rcg.tick = initial_dict.get("tick")
+
+                return reader, writer
+            elif not initial_dict["pw_auth"]:
+                # password not authenticated - wait and then loop back around
+                print("pw rejected")
+                await asyncio.sleep(3)
 
     async def handle_connection(self):
         # infinitely loops, handling the main connection with the server
