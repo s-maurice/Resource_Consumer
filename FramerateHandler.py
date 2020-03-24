@@ -3,7 +3,7 @@ from asyncio import sleep
 
 
 class FramerateHandler(object):
-    # awaitable framerate handler that averages out the previous n frame-times
+    # await-able framerate handler that averages out the previous n frame-times
     # to variably wait to keep framerate at a target value
     def __init__(self, framerate_target):
         self.framerate_target = framerate_target
@@ -35,9 +35,3 @@ class FramerateHandler(object):
         wait_time = max(wait_time, self.minimum_frametime)
 
         await sleep(wait_time)  # asyncio.sleep()
-
-
-
-
-
-
