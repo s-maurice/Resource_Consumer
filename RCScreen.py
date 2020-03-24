@@ -56,7 +56,8 @@ class RCScreen(object):
         self.surface_hud.fill((0, 0, 0, 0))  # alpha value of 0 needed
 
         # draw the background
-        self.rcg.game_map.draw_handler.draw_background(self.bg_surface, self.offsets, self.tile_size)
+        self.rcg.game_map.draw_handler.draw_background(self.bg_surface, self.offsets, (self.tile_size, self.tile_size))
+
         # draw the machines
         for machine in self.rcg.placed_objects:
             machine.draw_handler.draw(self.machine_surface, self.offsets, self.tile_size)
