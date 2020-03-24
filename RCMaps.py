@@ -6,6 +6,7 @@ from RCMapTypes import RCMap
 class IceMap(RCMap):
     id = 1
 
+    size = (0, 0)
     background_map = np.array([])
     background_addition_map = np.array([])
 
