@@ -1,9 +1,9 @@
 import numpy as np
 
-from RCMapTypes import RCMap
+from RCMapTypes import StoredMap
 
 
-class IceMap(RCMap):
+class IceMap(StoredMap):
     id = 1
 
     size = (0, 0)

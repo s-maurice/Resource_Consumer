@@ -3,13 +3,15 @@ import json
 import hashlib
 
 from RCGame import ResourceConsumerGame
+from RCMapTypes import RandomMap
 from SocketProtocol import protocol_read, protocol_write
 
 
 class ResourceConsumerServer(object):
 
     def __init__(self):
-        self.rcg = ResourceConsumerGame()
+        game_map = RandomMap()
+        self.rcg = ResourceConsumerGame(game_map)
         self.hashed_password = None
 
     def set_hashed_password(self, password):

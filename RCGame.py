@@ -8,10 +8,10 @@ from RCMapTypes import RandomMap
 
 
 class ResourceConsumerGame(object):
-    def __init__(self):
-        self.game_map = RandomMap()  # game_map object
+    def __init__(self, game_map):
+        self.game_map = game_map  # game_map object
 
-        self.placed_objects = self.game_map.placed_objects  # list of all the RCMachines, initially inherit from the map
+        self.placed_objects = game_map.placed_objects  # list of all the RCMachines, initially inherit from the map
 
         self.inventory = {}  # dict of RCResources and number
 

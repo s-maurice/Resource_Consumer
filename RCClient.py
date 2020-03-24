@@ -6,6 +6,7 @@ from RCScreen import RCScreen
 from RCGame import ResourceConsumerGame
 from RCMachines import machine_id_lookup
 from RCMaps import *
+from RCMapTypes import SentMap
 from RCResources import resource_id_lookup
 from SocketProtocol import protocol_read, protocol_write
 
@@ -40,9 +41,7 @@ class ResourceConsumerClient(object):
             initial_dict = json.loads(data)
             # check if password is accepted
             if initial_dict["pw_auth"]:
-
                 # once the dict with initial details has been received, init RCGame and put in the details
-                self.rcg = ResourceConsumerGame()
 
                 # TODO re-builder funcs for all the things that need rebuilding
 
@@ -53,14 +52,18 @@ class ResourceConsumerClient(object):
                     print(map_id)
                     if map_id == 0:
                         # custom map, need to build
-                        map_obj = RCMap()
-                        map_obj.background_map = np.array(game_map_dict["bg"])
-                        map_obj.background_addition_map = np.array(game_map_dict["bga"])
-                        # placed objects handled later
-                        self.rcg.game_map = map_obj
+                        size = game_map_dict["size"]
+                        background_map = np.array(game_map_dict["bg"])
+                        background_addition_map = np.array(game_map_dict["bga"])
+                        map_obj = SentMap(size, background_map, background_addition_map)
+                        # placed objects are handled later
+                        # once map is ready, can init the game with the map
+                        self.rcg = ResourceConsumerGame(map_obj)
                     elif map_id > 0:
                         # defined map in the RCMaps
-                        self.rcg.game_map = map_id_lookup.get(map_id)
+                        map_obj = map_id_lookup.get(map_id)
+                        # once map is ready, can init the game with the map
+                        self.rcg = ResourceConsumerGame(map_obj)
                     else:
                         # no map sent, error
                         pass
