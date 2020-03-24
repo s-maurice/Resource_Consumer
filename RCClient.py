@@ -2,6 +2,7 @@ import asyncio
 import hashlib
 import json
 
+from RCScreen import RCScreen
 from RCGame import ResourceConsumerGame
 from RCMachines import machine_id_lookup
 from RCMaps import *
@@ -19,7 +20,7 @@ class ResourceConsumerClient(object):
         self.sending_message = "hi"
 
         self.rcg = None
-        self.rcr = None
+        self.rcs = None
 
     async def connect_to_server(self):
         # searches for and establishes initial connection with the server, returning the reader and writer for later use
@@ -114,8 +115,8 @@ class ResourceConsumerClient(object):
             await asyncio.sleep(2)
 
     async def game_render_loop(self):
-        # loop for drawing the game
-        pass
+        self.rcs = RCScreen(self.rcg)
+        await self.rcs.main()
 
     async def main(self):
         # establish communication

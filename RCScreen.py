@@ -1,8 +1,10 @@
+import time
+import asyncio
+
 import pygame
 
 from InputHandler import InputHandler
 from RCGame import ResourceConsumerGame
-from DrawHandlers import BackgroundTileDrawHandler
 
 
 class RCScreen(object):
@@ -11,6 +13,8 @@ class RCScreen(object):
         self.rcg = rcg
 
         self.input_handler = InputHandler()
+
+        pygame.init()
 
         # set up window
         self.window_size = (1000, 750)
@@ -120,7 +124,7 @@ class RCScreen(object):
         self.adjust_camera_offset(camera_offset_adjust)
         self.adjust_camera_zoom(camera_zoom_adjust)
 
-    def main(self):
+    async def main(self):
         # main loop for handling every frame of the screen
         self.run = True
         while self.run:
@@ -131,6 +135,7 @@ class RCScreen(object):
             self.draw()
 
             # Frame-rate limit
-            self.clock.tick(60)
+            # await self.clock.tick(60)
+            await asyncio.sleep(1)
 
-
+            print("FRAME FINISHED ---------")
