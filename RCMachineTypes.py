@@ -104,6 +104,12 @@ class GenericMachine(object):
 
         return details
 
+    def rotate(self, new_rotation):
+        # sets the rotation to the new rotation, calls the rotate func in the draw handler
+        # WHEN CALLING ROTATE, NEED TO REBUILD OUTPUT_MACHINES
+        self.rotation = new_rotation
+        self.draw_handler.rotate(new_rotation)
+
 
 class ProcessingMachine(GenericMachine):
     # class for machines with input and output
