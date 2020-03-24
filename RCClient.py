@@ -19,6 +19,7 @@ class ResourceConsumerClient(object):
         self.sending_message = "hi"
 
         self.rcg = None
+        self.rcr = None
 
     async def connect_to_server(self):
         # searches for and establishes initial connection with the server, returning the reader and writer for later use
@@ -112,18 +113,26 @@ class ResourceConsumerClient(object):
             print("client tick")
             await asyncio.sleep(2)
 
+    async def game_render_loop(self):
+        # loop for drawing the game
+        pass
+
     async def main(self):
         # establish communication
         networking_task = asyncio.create_task(self.connect_to_server())
         self.reader, self.writer = await networking_task
 
         # once connection has been established
-        # create and run the main game loop task
+
+        # create and run the main game loop task and renderer task
         game_task = asyncio.create_task(self.game_loop())
+        render_task = asyncio.create_task(self.game_render_loop())
+
         # create and run the communication task
         communication_task = asyncio.create_task(self.handle_connection())
 
         await game_task
+        await render_task
         await communication_task
 
 
