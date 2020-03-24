@@ -11,7 +11,7 @@ pygame.display.set_caption("resource consumer test")
 clock = pygame.time.Clock()
 
 surface_background = pygame.Surface(size)
-test_image = pygame.image.load("mineindustry_sprites/grass.png")
+test_image = pygame.image.load("mineindustry_sprites/1.png")
 test_image2 = pygame.image.load("mineindustry_sprites/ice.png")
 test_image3 = pygame.image.load("mineindustry_sprites/spore.png")
 
@@ -57,7 +57,7 @@ while run:
             if event.key == pygame.K_9:
                 px_square_size = 50
 
-                test_image = pygame.image.load("mineindustry_sprites/grass.png")
+                test_image = pygame.image.load("mineindustry_sprites/1.png")
                 test_image2 = pygame.image.load("mineindustry_sprites/ice.png")
                 test_image3 = pygame.image.load("mineindustry_sprites/spore.png")
 
