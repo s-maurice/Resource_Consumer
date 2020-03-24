@@ -140,5 +140,6 @@ class ResourceConsumerClient(object):
         await communication_task
 
 
-rcc = ResourceConsumerClient()
-asyncio.run(rcc.main())
+if __name__ == "__main__":
+    rcc = ResourceConsumerClient()
+    asyncio.run(rcc.main())
