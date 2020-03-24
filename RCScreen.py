@@ -38,7 +38,7 @@ class RCScreen(object):
         self.offsets_min = (-1000, -1000)  # (x, y) pairs or (h, v) pairs
         # can be changed to be smooth/have acceleration
         self.offset_move_speed = 10  # n pixels change per frame
-        self.tile_size_zoom_speed = 1  # n pixels change per frame
+        self.tile_size_zoom_speed = 2  # n pixels change per frame
 
         # set up base zoom and camera position
         self.tile_size = 50
