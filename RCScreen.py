@@ -3,6 +3,7 @@ import asyncio
 
 import pygame
 
+from FramerateHandler import FramerateHandler
 from InputHandler import InputHandler
 from RCGame import ResourceConsumerGame
 
@@ -13,6 +14,7 @@ class RCScreen(object):
         self.rcg = rcg
 
         self.input_handler = InputHandler()
+        self.framerate_handler = FramerateHandler(30)
 
         pygame.init()
 
@@ -128,14 +130,13 @@ class RCScreen(object):
         # main loop for handling every frame of the screen
         self.run = True
         while self.run:
+            self.framerate_handler.frame_start()  # start the framerate_handler's frame
+
             # use input_handler and method to apply all the needed inputs/actions
             self.handle_events()
 
             # entire draw routine
             self.draw()
 
-            # Frame-rate limit
-            # await self.clock.tick(60)
-            await asyncio.sleep(1)
-
-            print("FRAME FINISHED ---------")
+            # dynamically await using the framerate_handler
+            await self.framerate_handler.frame_end()
