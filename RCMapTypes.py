@@ -52,8 +52,8 @@ class SentMap(RCMapBase):
 class RandomMap(RCMapBase):
     def __init__(self):
         size = (20, 20)
-        background_map = np.ones(self.size, dtype=int)  # bg tiles
-        background_addition_map = np.random.randint(0, 2, size=self.size, dtype=int)  # bg extras (ores)
+        background_map = np.random.randint(1, 4, size=size, dtype=int)  # bg tiles
+        background_addition_map = np.random.randint(0, 2, size=size, dtype=int)  # bg extras (ores)
 
         super().__init__(size, background_map, background_addition_map)
 
