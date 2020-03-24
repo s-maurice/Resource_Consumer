@@ -63,7 +63,7 @@ class BackgroundTileSprite(TileSprite):
 
 
 class ForegroundTileSprite(TileSprite):
-    load_folder = "foreground"
+    load_folder = "machines"
     sprite_id_path = sprite_id_path_fg
 
     def __init__(self, surface, board_pos, sprite_id):

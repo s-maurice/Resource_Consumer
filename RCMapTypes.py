@@ -1,33 +1,19 @@
 import numpy as np
 
-from DrawHandlers import BackgroundTileDrawHandler
+from DrawHandlers import BackgroundDrawHandler
 
 
 class RCMap(object):
     id = 0
 
     size = (0, 0)
-    background_map = None
-    background_addition_map = None
+    background_map = np.array([])
+    background_addition_map = np.array([])
 
     placed_objects = []
 
     def __init__(self):
-        self.bg_draw_handlers = []
-        self.bg_add_draw_handlers = []
-
-        for x in range(self.size[0]):
-            for y in range(self.size[1]):
-                # TODO move all image locations to the draw handlers - here and in the machines
-                tile_id = self.background_map[x, y]
-                image_location = "mineindustry_sprites/background/{}.png".format(tile_id)
-                bg_renderer = BackgroundTileDrawHandler(image_location, (x, y))
-                self.bg_draw_handlers.append(bg_renderer)
-
-                tile_id_addition = self.background_addition_map[x, y]
-                image_location_addition = "mineindustry_sprites/background_additions/{}.png".format(tile_id)
-                bg_addition_renderer = BackgroundTileDrawHandler(image_location, (x, y))
-                self.bg_add_draw_handlers.append(bg_addition_renderer)
+        self.draw_handler = BackgroundDrawHandler(self.size, self.background_map, self.background_addition_map)
 
     def to_json_serialisable(self):
         # returns a serialisable version of itself that can be rebuilt
@@ -40,13 +26,6 @@ class RCMap(object):
         }
 
         return details
-
-    def draw_background(self, surface, offsets, size):
-        # iterates through the draw handlers for each tile and renders them
-        for draw_handler in self.bg_draw_handlers:
-            draw_handler.draw(surface, offsets, size)
-        for draw_handler in self.bg_add_draw_handlers:
-            draw_handler.draw(surface, offsets, size)
 
 
 class RandomMap(RCMap):
