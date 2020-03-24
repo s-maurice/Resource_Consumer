@@ -81,7 +81,7 @@ class BackgroundDrawHandler(object):
 
                 tile_id_add = background_addition_map[x, y]
                 if tile_id_add != 0:
-                    bg_add_renderer = BackgroundTileDrawHandler(tile_id_add, (x, y))
+                    bg_add_renderer = BackgroundTileAdditionDrawHandler(tile_id_add, (x, y))
                     self.bg_add_draw_handlers.append(bg_add_renderer)
 
     def draw_background(self, surface, offsets, size):
@@ -100,6 +100,15 @@ class BackgroundTileDrawHandler(BaseDrawHandler):
     def __init__(self, image_id, board_pos):
 
         rotation = random.randint(0, 3)  # randomise rotation between (0 and 3)
+        super().__init__(image_id, board_pos, rotation)
 
+
+class BackgroundTileAdditionDrawHandler(BaseDrawHandler):
+    # class for handling the drawing of background tiles
+    base_image_location = "mineindustry_sprites/background_additions/{}.png"
+
+    def __init__(self, image_id, board_pos):
+
+        rotation = random.randint(0, 3)  # randomise rotation between (0 and 3)
         super().__init__(image_id, board_pos, rotation)
 
