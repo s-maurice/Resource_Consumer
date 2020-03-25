@@ -80,7 +80,8 @@ class ResourceConsumerServer(object):
 
     async def start_networking(self):
         # called to start the networking - constantly runs establish connection to try to establish new connections
-        server = await asyncio.start_server(self.establish_connection, '127.0.0.1', 8888)
+        # server = await asyncio.start_server(self.establish_connection, '127.0.0.1', 8888)
+        server = await asyncio.start_server(self.establish_connection, "", 8888)
 
         address = server.sockets[0].getsockname()
         print("Server started with address: ", address)

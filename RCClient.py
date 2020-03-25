@@ -26,7 +26,8 @@ class ResourceConsumerClient(object):
     async def connect_to_server(self):
         # searches for and establishes initial connection with the server, returning the reader and writer for later use
         while True:
-            reader, writer = await asyncio.open_connection('127.0.0.1', 8888)
+            # reader, writer = await asyncio.open_connection('127.0.0.1', 8888)
+            reader, writer = await asyncio.open_connection("", 8888)
 
             # hash password to compare
             password_attempt = self.TEMP_PW
