@@ -1,3 +1,4 @@
+import math
 import time
 import asyncio
 
@@ -6,6 +7,7 @@ import pygame
 from FramerateHandler import FramerateHandler
 from InputHandler import InputHandler
 from RCGame import ResourceConsumerGame
+from RCScreenGUI import RCScreenGUI
 
 
 class RCScreen(object):
@@ -30,6 +32,9 @@ class RCScreen(object):
         self.bg_surface = pygame.Surface(self.window_size)
         self.machine_surface = pygame.Surface(self.window_size, pygame.SRCALPHA)  # per pixel alpha
         self.surface_hud = pygame.Surface(self.window_size, pygame.SRCALPHA)  # per pixel alpha
+
+        # set up GUI
+        self.gui = RCScreenGUI(self.rcg)
 
         # zoom and camera position limits and speeds
         self.tile_size_min = 10
@@ -61,6 +66,9 @@ class RCScreen(object):
         # draw the machines
         for machine in self.rcg.placed_objects:
             machine.draw_handler.draw(self.machine_surface, self.offsets, self.tile_size)
+
+        # draw the gui
+        self.gui.draw(self.surface_hud)
 
         # Update screen surface
         self.screen.blit(self.bg_surface, (0, 0))
@@ -97,7 +105,8 @@ class RCScreen(object):
         # updates the input_handler with input changes
         # handles the inputs given by the input handler
 
-        # Get and process events, including keypress
+        # Get and process events, including keypress and mouse position
+        mouse_pos = pygame.mouse.get_pos()
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 self.run = False  # handle exit flag
@@ -105,27 +114,54 @@ class RCScreen(object):
                 self.input_handler.kb_input_start(event.key)
             elif event.type == pygame.KEYUP:
                 self.input_handler.kb_input_stop(event.key)
+            elif event.type == pygame.MOUSEBUTTONDOWN:
+                for m_button, pressed in enumerate(pygame.mouse.get_pressed()):
+                    if pressed == 1:
+                        self.input_handler.m_down(m_button, mouse_pos)
+            elif event.type == pygame.MOUSEBUTTONUP:
+                for m_button, pressed in enumerate(pygame.mouse.get_pressed()):
+                    if pressed == 0:
+                        self.input_handler.m_up(m_button, mouse_pos)  # mouse is checked if it even was down inside
 
         # handle inputHandler inputs, this can be moved into the input_handler
+        kb_inputs, m_inputs = self.input_handler.get_inputs()
+
+        # handle keyboard
         camera_offset_adjust = [0, 0]
         camera_zoom_adjust = 0
-        player_inputs = self.input_handler.get_inputs()
-        if player_inputs.get("pan_left"):
+        if kb_inputs.get("pan_left"):
             camera_offset_adjust[0] -= 1
-        if player_inputs.get("pan_right"):
+        if kb_inputs.get("pan_right"):
             camera_offset_adjust[0] += 1
-        if player_inputs.get("pan_up"):
+        if kb_inputs.get("pan_up"):
             camera_offset_adjust[1] -= 1
-        if player_inputs.get("pan_down"):
+        if kb_inputs.get("pan_down"):
             camera_offset_adjust[1] += 1
-        if player_inputs.get("zoom_in"):
+        if kb_inputs.get("zoom_in"):
             camera_zoom_adjust += 1
-        if player_inputs.get("zoom_out"):
+        if kb_inputs.get("zoom_out"):
             camera_zoom_adjust -= 1
 
         # apply the camera offset and zoom changes
         self.adjust_camera_offset(camera_offset_adjust)
         self.adjust_camera_zoom(camera_zoom_adjust)
+
+        # handle mouse
+        # for mouse in m_inputs:
+        #     if mouse["up_pos"] is not None:
+        #         print(mouse["up_pos"])
+
+        # update the gui with the mouse position and mouse input handler
+        self.gui.update(mouse_pos, m_inputs)
+
+    def px_to_game_tile(self, pixel_pos):
+        # pixel_pos is a tuple (x, y) of a pixel position
+        # converts the pixel_pos to the game_pos tuple (x, y) for the correct game tile
+
+        tile_x = math.ceil((pixel_pos[0] - self.offsets[0]) / self.tile_size)
+        tile_y = math.ceil((pixel_pos[1] - self.offsets[1]) / self.tile_size)
+
+        return tile_x, tile_y
 
     async def main(self):
         # main loop for handling every frame of the screen

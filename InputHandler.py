@@ -10,6 +10,8 @@ class InputHandler(object):
                        "zoom_in": False,
                        "zoom_out": False}
 
+        self.mouse = [{"down_pos": None, "up_pos": None} for _ in range(3)]
+
     def kb_input_start(self, key):
         if key == pygame.K_w:
             self.action["pan_up"] = True
@@ -38,5 +40,25 @@ class InputHandler(object):
         elif key == pygame.K_EQUALS:
             self.action["zoom_in"] = False
 
+    def m_down(self, m_button, d_pos):
+        self.mouse[m_button]["up_pos"] = None  # reset the up pos
+
+        self.mouse[m_button]["down_pos"] = d_pos
+
+    def m_up(self, m_button, u_pos):
+        # checks if mouse was down, if mouse was not, ignore
+        if self.mouse[m_button]["down_pos"] is not None:
+            self.mouse[m_button]["up_pos"] = u_pos
+
     def get_inputs(self):
-        return self.action
+        # returns the inputs
+
+        # for the mouse, if on return both the down_pos and up_pos values are not None, reset back to None
+        # make a copy for returning with the values before removal
+        mouse = self.mouse.copy()
+        # remove the completed mouse movement values
+        for m_index, m_dict in enumerate(self.mouse):
+            if m_dict["down_pos"] is not None and m_dict["up_pos"] is not None:
+                self.mouse[m_index] = {"down_pos": None, "up_pos": None}
+
+        return self.action, mouse
