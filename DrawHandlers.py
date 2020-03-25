@@ -111,4 +111,3 @@ class BackgroundTileAdditionDrawHandler(BaseDrawHandler):
 
         rotation = random.randint(0, 3)  # randomise rotation between (0 and 3)
         super().__init__(image_id, board_pos, rotation)
-
