@@ -4,7 +4,7 @@ from RCResources import Sand, Lead, Glass, Titanium
 
 class Processor1(ProcessingMachine):
     id = 1
-    image_name = "Processor1"
+    image_name = "processor1"
 
     size = (2, 2)
     resource_in = {Sand: 1}  # dict with RCResource and number needed
