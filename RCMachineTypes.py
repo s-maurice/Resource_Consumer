@@ -21,7 +21,7 @@ class GenericMachine(object):
         self.inventory = {}
         self.timer = 0
 
-        assert 0 <= self.rotation <= 3
+        assert 0 <= rotation <= 3
         self.rotation = rotation
         self.position = position
 
@@ -31,7 +31,7 @@ class GenericMachine(object):
 
     def build_cost_satisfied(self, inventory_dict):
         # takes a dict of the materials the player has, and compares it to the required materials in the build_cost
-        for key, value in self.build_cost:
+        for key, value in self.build_cost.items():
             if inventory_dict.get(key, 0) < value:
                 return False
         else:
@@ -142,14 +142,14 @@ class ProcessingMachine(GenericMachine):
         # check according to speed, and if the inventory capacity for the output is not full
         if self.timer % self.speed == 0 and self.inventory[self.resource_out] < self.max_capacity[self.resource_out]:
             # check inventory to see if enough materials are available to produce output
-            for key, item in self.inventory:
+            for key, item in self.inventory.items():
                 if not item == self.resource_out:
                     if item <= self.resource_in.get(key, 0):
                         # item failed check
                         break
             else:
                 # all requirements satisfied, subtract inputs from inventory
-                for key, item in self.inventory:
+                for key, item in self.inventory.items():
                     if not item == self.resource_out:
                         self.inventory[key] -= self.resource_in.get(key, 0)
                 self.inventory[self.resource_out] += 1  # place resource into inventory for output
