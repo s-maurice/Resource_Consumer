@@ -29,14 +29,6 @@ class GenericMachine(object):
 
         self.draw_handler = MachineDrawHandler(self.image_name, position, rotation)
 
-    def build_cost_satisfied(self, inventory_dict):
-        # takes a dict of the materials the player has, and compares it to the required materials in the build_cost
-        for key, value in self.build_cost.items():
-            if inventory_dict.get(key, 0) < value:
-                return False
-        else:
-            return True
-
     def tiles_occupied(self):
         # returns a list of the tiles (x, y) occupied by this machine
         tiles = []
