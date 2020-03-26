@@ -12,7 +12,7 @@ class FramerateHandler(object):
         self.current_frame_start = None
         self.previous_frame_times = []
         self.average_n_frame_times = 10  # averages the previous 10 frame times
-        self.minimum_frametime = 0.005  # minimum time for the await between frames
+        self.minimum_frametime = 0.002  # minimum time for the await between frames
 
     def frame_start(self):
         # called at the beginning of a frame
