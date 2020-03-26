@@ -23,6 +23,8 @@ class ResourceConsumerClient(object):
         self.rcg = None
         self.rcs = None
 
+        self.outgoing_queue = {"tick": 0, "placements": [], "removal_sel": []}  # dict for data to be sent to server
+
     async def connect_to_server(self):
         # searches for and establishes initial connection with the server, returning the reader and writer for later use
         while True:
@@ -115,11 +117,11 @@ class ResourceConsumerClient(object):
         # main loop for the game, controlling the game's tick speed
         while True:
             self.rcg.tick_game()
-            print("client tick")
+            print("client tick", self.rcg.tick)
             await asyncio.sleep(2)
 
     async def game_render_loop(self):
-        self.rcs = RCScreen(self.rcg)
+        self.rcs = RCScreen(self.rcg, self.outgoing_queue)
         await self.rcs.main()
 
     async def main(self):

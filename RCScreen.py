@@ -1,6 +1,4 @@
 import math
-import time
-import asyncio
 
 import pygame
 
@@ -12,8 +10,9 @@ from RCScreenGUI import RCScreenGUI
 
 class RCScreen(object):
     # class to handle the overall window, interaction and rendering of a ResourceConsumerGame object
-    def __init__(self, rcg: ResourceConsumerGame):
+    def __init__(self, rcg: ResourceConsumerGame, callback_outgoing_queue):
         self.rcg = rcg
+        self.callback_outgoing = callback_outgoing_queue
 
         self.input_handler = InputHandler()
         self.framerate_handler = FramerateHandler(30)
@@ -157,8 +156,13 @@ class RCScreen(object):
                         print("place building at", m_inputs[0]["up_pos"][1], self.selected_machine)
 
                         machine = self.selected_machine(m_inputs[0]["up_pos"][1], 0)
-                        a = self.rcg.build_tile(machine, ignore_check=True)
-                        print("building built", a)
+                        if self.rcg.can_build_machine(machine):
+                            # add to the staging callback queue so the client can send to server
+                            self.callback_outgoing["placements"].append(machine)
+
+                        # DEBUG
+                        # a = self.rcg.build_tile(machine, ignore_check=True)
+                        # print("building built", a)
 
         # right click drag selection
 

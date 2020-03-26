@@ -4,6 +4,7 @@ import hashlib
 
 from RCGame import ResourceConsumerGame
 from RCMapTypes import RandomMap
+from RCResources import Lead, Titanium
 from SocketProtocol import protocol_read, protocol_write
 
 
@@ -70,19 +71,24 @@ class ResourceConsumerServer(object):
         # one of these exists for each of the connected clients
         # infinitely loops, handling the main connection with the clients
 
+        address = writer.get_extra_info('peername')
+
         # on task begin, create a queue for the data to be sent out to this client
-        self.client_outgoing_queue[writer.get_extra_info('peername')] = []
+        self.client_outgoing_queue[address] = {"tick": 0, "placements": [], "removal_sel": []}
 
         while True:
             message = await protocol_read(reader)
 
-            address = writer.get_extra_info('peername')
             print("Received {} from {}".format(message, address))
 
             print("Sending tick: ", self.rcg.tick)
             await protocol_write(writer, str(self.rcg.tick))
 
             await asyncio.sleep(2)
+
+    def add_to_out_queue(self, data_dict):
+        # adds the given data_dict to the queues of every client
+        pass
 
     async def start_networking(self):
         # called to start the networking - constantly runs establish connection to try to establish new connections
@@ -113,5 +119,10 @@ class ResourceConsumerServer(object):
 
 if __name__ == "__main__":
     rcs = ResourceConsumerServer()
+
+    # for debug give resources
+    rcs.rcg.inventory[Lead] = 1000
+    rcs.rcg.inventory[Titanium] = 1000
+
     rcs.set_hashed_password("yeet")
     asyncio.run(rcs.main())
