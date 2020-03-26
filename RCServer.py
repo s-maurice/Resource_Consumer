@@ -14,6 +14,8 @@ class ResourceConsumerServer(object):
         self.rcg = ResourceConsumerGame(game_map)
         self.hashed_password = None
 
+        self.client_outgoing_queue = {}  # not real queue, just a list for each client of details to be sent
+
     def set_hashed_password(self, password):
         # takes password string and stores as class attribute
         self.hashed_password = hashlib.sha224(password.encode()).hexdigest()
@@ -23,13 +25,13 @@ class ResourceConsumerServer(object):
         # always runs, looking for new clients to connect
         password_attempt = await protocol_read(reader)  # need timeout, can be hijacked so no new clients can connect
 
-        addr = writer.get_extra_info('peername')
-        print("FROM {} got pw attempt {}".format(addr, password_attempt))
+        address = writer.get_extra_info('peername')
+        print("FROM {} got pw attempt {}".format(address, password_attempt))
 
         # password checking
         if self.hashed_password == password_attempt:
             # on password success
-            print("{} PW PASS".format(addr))
+            print("{} PW PASS".format(address))
 
             # build the details to send on connection
             # game_map is only sent when it is a custom game_map, otherwise the map can be loaded client-side
@@ -57,7 +59,7 @@ class ResourceConsumerServer(object):
             await connection_task
         else:
             # on password fail
-            print("{} PW FAIL".format(addr))
+            print("{} PW FAIL".format(address))
 
             initial_dict = {"pw_auth": False}
             initial_json = json.dumps(initial_dict)
@@ -67,6 +69,10 @@ class ResourceConsumerServer(object):
     async def handle_existing_connection(self, reader, writer):
         # one of these exists for each of the connected clients
         # infinitely loops, handling the main connection with the clients
+
+        # on task begin, create a queue for the data to be sent out to this client
+        self.client_outgoing_queue[writer.get_extra_info('peername')] = []
+
         while True:
             message = await protocol_read(reader)
 
