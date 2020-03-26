@@ -45,9 +45,8 @@ class ResourceConsumerGame(object):
         # takes a prototype machine object - already initialised with position, and checks requirements
         # returns true or false depending on if the machine can be built
         assert isinstance(machine, GenericMachine)
-
         # check if inventory has enough materials to build machine and that there are no collisions
-        for key, value in machine.build_cost.item():
+        for key, value in machine.build_cost.items():
             if self.inventory.get(key, 0) < value:
                 break
         else:
