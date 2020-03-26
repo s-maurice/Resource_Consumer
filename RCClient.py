@@ -73,15 +73,14 @@ class ResourceConsumerClient(object):
 
                 # handle placed objects
                 for machine_dict in initial_dict.get("placed_obj"):
-
-                    machine = machine_id_lookup.get(machine_dict.get("id"))  # get correct machine type
+                    machine = machine_id_lookup.get(int(machine_dict.get("id")))  # get correct machine type
                     machine = machine((machine_dict.get("pos")), machine_dict.get("rot"))  # call constructor
                     # place in other attributes
                     machine.time = machine_dict.get("time")
 
                     # handle machine's inventory
                     for key, item in machine_dict.get("inv"):
-                        res = resource_id_lookup.get(key)
+                        res = resource_id_lookup.get(int(key))
                         machine.inventory[res] = item
 
                     # since initial build - ignore resource checks
@@ -90,7 +89,7 @@ class ResourceConsumerClient(object):
 
                 # handle game inventory
                 for key, item in initial_dict.get("inv").items():
-                    res = resource_id_lookup.get(key)
+                    res = resource_id_lookup.get(int(key))
                     self.rcg.inventory[res] = item
 
                 # handle tick
