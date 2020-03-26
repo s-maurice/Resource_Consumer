@@ -143,4 +143,4 @@ class ResourceConsumerClient(object):
 
 if __name__ == "__main__":
     rcc = ResourceConsumerClient()
-    asyncio.run(rcc.main())
+    asyncio.run(rcc.main(), debug=False)
