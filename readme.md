@@ -7,4 +7,6 @@ make server not load up draw handlers
 redo draw handlers so that the textures only need to be loaded once
 the two above can be achieved by moving the drawing into the RCScreen.py
 
+add tick speed handler - similar to framerate handler to handle the tick speed of the client and server
+
 have 2d array for machines on map, with the tiles each machine occupying referencing the machine
