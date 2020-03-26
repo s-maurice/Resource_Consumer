@@ -87,7 +87,7 @@ class ResourceConsumerClient(object):
                     self.rcg.build_tile(machine, ignore_check=True)
 
                 # handle game inventory
-                for key, item in initial_dict.get("inv"):
+                for key, item in initial_dict.get("inv").items():
                     res = resource_id_lookup.get(key)
                     self.rcg.inventory[res] = item
 
