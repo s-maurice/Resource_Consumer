@@ -107,9 +107,11 @@ class ResourceConsumerGame(object):
         # called every game tick, ticks all the machines and increments the tick
 
         for machine in self.placed_objects:
-            machine.output_item()  # machine automatically select machine to output to if able
+            if isinstance(machine, ProcessingMachine):
+                machine.output_item()  # machine automatically select machine to output to if able
         for machine in self.placed_objects:
-            machine.machine_process()  # machines do work
+            if isinstance(machine, ProcessingMachine):
+                machine.machine_process()  # machines do work
 
         self.tick += 1
 
