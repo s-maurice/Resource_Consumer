@@ -66,7 +66,7 @@ class RCScreen(object):
 
         # draw the machines
         for machine in self.rcg.placed_objects:
-            machine.draw_handler.draw(self.machine_surface, self.offsets, self.tile_size)
+            machine.draw_handler.draw(self.machine_surface, self.offsets, (self.tile_size, self.tile_size))
 
         # draw the gui
         self.gui.draw(self.surface_hud)
@@ -155,6 +155,10 @@ class RCScreen(object):
                     # need to check if on gui
                     if m_inputs[0]["down_pos"][1] == m_inputs[0]["up_pos"][1]:  # compare the game pos
                         print("place building at", m_inputs[0]["up_pos"][1], self.selected_machine)
+
+                        machine = self.selected_machine(m_inputs[0]["up_pos"][1], 0)
+                        a = self.rcg.build_tile(machine, ignore_check=True)
+                        print("building built", a)
 
         # right click drag selection
 
