@@ -6,7 +6,7 @@ import pygame
 
 from FramerateHandler import FramerateHandler
 from InputHandler import InputHandler
-from RCGame import ResourceConsumerGame
+from RCGame import ResourceConsumerGame, GenericMachine
 from RCScreenGUI import RCScreenGUI
 
 
@@ -34,7 +34,8 @@ class RCScreen(object):
         self.surface_hud = pygame.Surface(self.window_size, pygame.SRCALPHA)  # per pixel alpha
 
         # set up GUI
-        self.gui = RCScreenGUI(self.rcg)
+        self.selected_machine = None  # used for the gui to callback to
+        self.gui = RCScreenGUI(self.rcg, self.set_selected_machine)
 
         # zoom and camera position limits and speeds
         self.tile_size_min = 10
@@ -117,11 +118,11 @@ class RCScreen(object):
             elif event.type == pygame.MOUSEBUTTONDOWN:
                 for m_button, pressed in enumerate(pygame.mouse.get_pressed()):
                     if pressed == 1:
-                        self.input_handler.m_down(m_button, mouse_pos)
+                        self.input_handler.m_down(m_button, mouse_pos, self.px_to_game_tile(mouse_pos))
             elif event.type == pygame.MOUSEBUTTONUP:
                 for m_button, pressed in enumerate(pygame.mouse.get_pressed()):
                     if pressed == 0:
-                        self.input_handler.m_up(m_button, mouse_pos)  # mouse is checked if it even was down inside
+                        self.input_handler.m_up(m_button, mouse_pos, self.px_to_game_tile(mouse_pos))
 
         # handle inputHandler inputs, this can be moved into the input_handler
         kb_inputs, m_inputs = self.input_handler.get_inputs()
@@ -147,21 +148,41 @@ class RCScreen(object):
         self.adjust_camera_zoom(camera_zoom_adjust)
 
         # handle mouse
-        # for mouse in m_inputs:
-        #     if mouse["up_pos"] is not None:
-        #         print(mouse["up_pos"])
+        # left click place
+        if m_inputs[0]["up_pos"] != [None, None]:
+            if self.selected_machine is not None:  # check if a building is selected
+                if self.is_on_map(m_inputs[0]["up_pos"][1]):
+                    # need to check if on gui
+                    if m_inputs[0]["down_pos"][1] == m_inputs[0]["up_pos"][1]:  # compare the game pos
+                        print("place building at", m_inputs[0]["up_pos"][1], self.selected_machine)
+
+        # right click drag selection
 
         # update the gui with the mouse position and mouse input handler
         self.gui.update(mouse_pos, m_inputs)
+
+    def is_on_map(self, game_pos):
+        # game pos is tuple (x, y) of already converted px_to_game_tile() result for a position
+        # checks if this position is within the map
+        map_size = self.rcg.game_map.size
+        if 0 <= game_pos[0] < map_size[0] and 0 <= game_pos[1] < map_size[1]:
+            return True
+        else:
+            return False
 
     def px_to_game_tile(self, pixel_pos):
         # pixel_pos is a tuple (x, y) of a pixel position
         # converts the pixel_pos to the game_pos tuple (x, y) for the correct game tile
 
-        tile_x = math.ceil((pixel_pos[0] - self.offsets[0]) / self.tile_size)
-        tile_y = math.ceil((pixel_pos[1] - self.offsets[1]) / self.tile_size)
+        tile_x = math.floor((pixel_pos[0] - self.offsets[0]) / self.tile_size)
+        tile_y = math.floor((pixel_pos[1] - self.offsets[1]) / self.tile_size)
 
         return tile_x, tile_y
+
+    def set_selected_machine(self, machine):
+        # setter for setting the currently selected machine - used by the RCScreenGUI for callback
+        assert issubclass(machine, GenericMachine)  # because not inited
+        self.selected_machine = machine
 
     async def main(self):
         # main loop for handling every frame of the screen
