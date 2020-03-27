@@ -24,28 +24,38 @@ class ResourceConsumerGame(object):
         self.tick = 0
 
     def dismantle_selection(self, selection_start, selection_end):
-        # selection_start is a tuple (x, y) of where the top left corner of the selection is
-        # selection_end is a tuple (x, y) of where the bottom right corner of the selection is
-        # mostly a modified version of is_collision() below
+        # # selection_start is a tuple (x, y) of where the top left corner of the selection is
+        # # selection_end is a tuple (x, y) of where the bottom right corner of the selection is
+        # # mostly a modified version of is_collision() below
+        #
+        # # to avoid concurrent modification problems, create new list of objects to keep
+        # new_placed_objects = []
+        #
+        # machine_min_x = selection_start[0]
+        # machine_max_x = selection_end[0]
+        # machine_min_y = selection_start[1]
+        # machine_max_y = selection_end[1]
+        #
+        # for placed_object in self.placed_objects:
+        #     placed_min_x = placed_object.position[0]
+        #     placed_max_x = placed_object.position[0] + placed_object.size[0] - 1
+        #     placed_min_y = placed_object.position[1]
+        #     placed_max_y = placed_object.position[1] + placed_object.size[1] - 1
+        #
+        #     if not ((placed_max_x >= machine_min_x or placed_min_x <= machine_max_x) and
+        #             (placed_max_y >= machine_min_y or placed_min_y <= machine_max_y)):
+        #         new_placed_objects.append(placed_object)  # no collision, so append
+        # self.placed_objects = new_placed_objects
 
-        # to avoid concurrent modification problems, create new list of objects to keep
-        new_placed_objects = []
+        # there are problems, such as selection that starts at bottom right and moves to top left
+        for y_idx, row in enumerate(self.placed_object_map[selection_start[1]:selection_end[1]]):
+            for x_idx, value in enumerate(row[selection_start[0]:selection_end[0]]):
+                if value != 0:
+                    # need to check if list.remove() works
+                    self.placed_objects.remove(value)
+                    self.placed_object_map[y_idx][x_idx] = 0
 
-        machine_min_x = selection_start[0]
-        machine_max_x = selection_end[0]
-        machine_min_y = selection_start[1]
-        machine_max_y = selection_end[1]
 
-        for placed_object in self.placed_objects:
-            placed_min_x = placed_object.position[0]
-            placed_max_x = placed_object.position[0] + placed_object.size[0] - 1
-            placed_min_y = placed_object.position[1]
-            placed_max_y = placed_object.position[1] + placed_object.size[1] - 1
-
-            if not ((placed_max_x >= machine_min_x or placed_min_x <= machine_max_x) and
-                    (placed_max_y >= machine_min_y or placed_min_y <= machine_max_y)):
-                new_placed_objects.append(placed_object)  # no collision, so append
-        self.placed_objects = new_placed_objects
 
     def can_build_machine(self, machine):
         # takes a prototype machine object - already initialised with position, and checks requirements
