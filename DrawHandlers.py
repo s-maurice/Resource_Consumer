@@ -1,6 +1,7 @@
 import random
 
 import pygame
+import numpy as np
 
 
 class BaseDrawHandler(pygame.sprite.Sprite):
@@ -104,6 +105,10 @@ class BackgroundDrawHandler2(object):
         self.background_map = background_map
         self.background_addition_map = background_addition_map
 
+        # generate the random rotation maps
+        self.background_rotation_map = np.random.randint(0, 4, size=size)
+        self.background_addition_rotation_map = np.random.randint(0, 4, size=size)
+
         self.bg_texture_dict = {}
         self.bga_texture_dict = {}
 
@@ -165,12 +170,31 @@ class BackgroundDrawHandler2(object):
                 draw_pos_x = x * self.current_size[0] + offsets[0]
                 draw_pos_y = y * self.current_size[1] + offsets[1]
 
+                # get tile texture id
                 bg_item = self.background_map[x, y]
                 bga_item = self.background_addition_map[x, y]
 
-                surface.blit(self.bg_texture_cur_size_dict[bg_item], (draw_pos_x, draw_pos_y))
+                # handle the background
+                if bg_item != 0:
+                    # get the texture from dict
+                    bg_texture = self.bg_texture_cur_size_dict[bg_item]
+                    # handle random rotations - this way rotates them every frame (slow)  # TODO store every rotation
+                    bg_rotation = self.background_rotation_map[x, y]
+                    if bg_rotation != 0:
+                        bg_texture = pygame.transform.rotate(bg_texture, 90*bg_rotation)
+                    # draw to surface
+                    surface.blit(bg_texture, (draw_pos_x, draw_pos_y))
+
+                # handle the background additions
                 if bga_item != 0:
-                    surface.blit(self.bga_texture_cur_size_dict[bga_item], (draw_pos_x, draw_pos_y))
+                    # get the texture from dict
+                    bga_texture = self.bga_texture_cur_size_dict[bga_item]
+                    # handle random rotations - this way rotates them every frame (slow)
+                    bga_rotation = self.background_addition_rotation_map[x, y]
+                    if bga_rotation != 0:
+                        bga_texture = pygame.transform.rotate(bga_texture, 90 * bga_rotation)
+                    # draw to surface
+                    surface.blit(bga_texture, (draw_pos_x, draw_pos_y))
 
 
 class BackgroundTileDrawHandler(BaseDrawHandler):
