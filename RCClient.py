@@ -35,11 +35,11 @@ class ResourceConsumerClient(object):
             password_attempt = self.TEMP_PW
             password_hashed = hashlib.sha224(password_attempt.encode()).hexdigest()
 
-            print("Send pw", password_hashed)
+            print("INITIAL: Send pw", password_hashed)
             await protocol_write(writer, password_hashed)
 
             data = await protocol_read(reader)
-            print("Receive", data)
+            print("INITIAL: Receive", data)
 
             initial_dict = json.loads(data)
             # check if password is accepted
@@ -136,7 +136,6 @@ class ResourceConsumerClient(object):
             if inv_dict is not None:
                 # handle inventory synchronisation here
                 self.rcg.inventory = inventory_from_json(inv_dict[0])
-                print('here')
 
                 # for debug, iterate through and print differences
                 # for key, item in inv_dict.items():
@@ -160,7 +159,7 @@ class ResourceConsumerClient(object):
         # main loop for the game, controlling the game's tick speed
         while True:
             self.rcg.tick_game()
-            print("client tick", self.rcg.tick)
+            print("Client Tick: ", self.rcg.tick)
             await asyncio.sleep(2)
 
     async def game_render_loop(self):

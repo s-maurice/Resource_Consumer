@@ -27,7 +27,7 @@ class ResourceConsumerServer(object):
         password_attempt = await protocol_read(reader)  # need timeout, can be hijacked so no new clients can connect
 
         address = writer.get_extra_info('peername')
-        print("FROM {} got pw attempt {}".format(address, password_attempt))
+        print("INITIAL: from {} got pw attempt {}".format(address, password_attempt))
 
         # password checking
         if self.hashed_password == password_attempt:
@@ -146,7 +146,7 @@ class ResourceConsumerServer(object):
         # main loop for the game, controlling the game's tick speed
         while True:
             self.rcg.tick_game()
-            print(self.rcg.tick)
+            print("Game Tick: ", self.rcg.tick)
             await asyncio.sleep(2)
 
     async def main(self):
