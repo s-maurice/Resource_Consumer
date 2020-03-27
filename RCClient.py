@@ -18,7 +18,6 @@ class ResourceConsumerClient(object):
         self.writer = None
 
         self.TEMP_PW = "yeet"
-        self.sending_message = "hi"
 
         self.rcg = None
         self.rcs = None

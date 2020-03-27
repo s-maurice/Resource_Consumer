@@ -42,10 +42,7 @@ resource_id_lookup = {EmptyIngotResource.id: EmptyIngotResource,
 def inventory_from_json(inventory_dict):
     # rebuilds an inventory from json
     inventory = {}
-    print(inventory_dict)
     for key, item in inventory_dict.items():
-        print(key, item)
         res = resource_id_lookup.get(int(key))
-        print(res)
         inventory[res] = item
     return inventory
