@@ -90,18 +90,6 @@ class ResourceConsumerGame(object):
         else:
             return False
 
-    def check_update_machine(self, machine):
-        # takes a machine and checks to see if there are new machines touching it to output to
-        # only one way check - checks to see if it can output, but not if it can be inputted to
-        touching_machines = [self.placed_object_map[i[1]][i[0]] for i in machine.get_tiles_outputted_to()]
-        touching_machines = [i for i in touching_machines if i != 0]  # flat-iteration, filter out 0s
-
-        # can have the same machine multiple times - intended
-        # fully overwrite the output_machines list - oder is lost
-        for touching_machine in touching_machines:
-            if touching_machine.check_accept_resosurce(machine.resource_out):
-                machine.output_machines.append(touching_machine)
-
     def machine_output_callback(self, resource, tile_tuple):
         # used by the machines to callback to - takes resource and tuple of a single tile to try
         # returns true if successfully inputted, otherwise false
@@ -136,32 +124,6 @@ class ResourceConsumerGame(object):
                 machine.machine_process()  # machines do work
 
         self.tick += 1
-
-    def add_machine_from_json(self, machine_dict):
-        # takes the output (already de-serialised) from a machines .to_json() function and builds equivalent machine
-        # then appends the machine to the game's machine list - with checking if server
-
-        machine_id = machine_dict.get("id", None)
-        assert machine_id is not None
-
-        machine = machine_id_lookup.get(machine_id)  # get correct machine type
-        machine = machine((machine_dict.get("pos")), machine_dict.get("rot"))  # call constructor
-        # place in other attributes
-        machine.time = machine_dict.get("time")
-
-        # handle inventory
-        for key, item in machine_dict.get("inv"):
-            res = resource_id_lookup.get(key)
-            machine.inventory[res] = item
-
-        # machine.output_machines = machine_dict.get("outmachines")  # client and server build upon adding
-
-        # check if this received machine satisfies the build requirements and build
-        if self.build_machine(machine):
-            # build is successful - return the serialisable machine (with server's output_machine for sending to client
-            return self.placed_objects[-1]
-        else:
-            return False  # build failure - client sending un-buildable machines to server or client desync
 
     def get_serialisable_inventory(self):
         # converts the inventory into a serialisable dict

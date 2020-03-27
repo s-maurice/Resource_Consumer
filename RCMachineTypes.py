@@ -57,20 +57,6 @@ class GenericMachine(object):
 
         return possible_tiles
 
-    def get_touching_tiles(self):
-        # returns a list of tiles touching the machine
-        # same as in get_tiles_outputted_to, but not overridden in conveyors
-        possible_tiles = []
-        for x in range(self.position[0], self.position[0] + self.size[0] - 1):
-            possible_tiles.append((x, self.position[1] - 1))  # all above
-            possible_tiles.append((x, self.position[1] + self.size[1] - 1))  # all below
-
-        for y in range(self.position[1], self.position[1] + self.size[1] - 1):
-            possible_tiles.append((y, self.position[0] - 1))  # all left
-            possible_tiles.append((y, self.position[0] + self.size[0] - 1))  # all right
-
-        return possible_tiles
-
     def shift_output_machines(self):
         # rolls the output machine list - so a new machine is outputted to
         self.output_machines = self.output_machines[1:] + self.output_machines[:1]
