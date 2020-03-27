@@ -26,16 +26,19 @@ class GenericMachine(object):
         self.position = position
 
         self.output_machines = []  # list of the machines that this machine outputs to
+        self.output_machine_tiles = self.get_tiles_outputted_to()  # list of the tiles that this machine outputs to
+
+        self.output_callback = None  # callback func to RCGame, used when outputting
 
         self.draw_handler = MachineDrawHandler(self.image_name, position, rotation)
 
-    def tiles_occupied(self):
+    def get_tiles_occupied(self):
         # returns a list of the tiles (x, y) occupied by this machine
         tiles = []
         for x in range(self.position[0], self.position[0] + self.size[0]):
             for y in range(self.position[1], self.position[1] + self.size[1]):
                 tiles.append((x, y))
-        return tiles
+        return tuple(tiles)
 
     def get_bounds(self):
         # returns a tuple of tuples with the corners of the machine ((x_left, y_top), (x_right, y_bottom))
@@ -54,9 +57,24 @@ class GenericMachine(object):
 
         return possible_tiles
 
+    def get_touching_tiles(self):
+        # returns a list of tiles touching the machine
+        # same as in get_tiles_outputted_to, but not overridden in conveyors
+        possible_tiles = []
+        for x in range(self.position[0], self.position[0] + self.size[0] - 1):
+            possible_tiles.append((x, self.position[1] - 1))  # all above
+            possible_tiles.append((x, self.position[1] + self.size[1] - 1))  # all below
+
+        for y in range(self.position[1], self.position[1] + self.size[1] - 1):
+            possible_tiles.append((y, self.position[0] - 1))  # all left
+            possible_tiles.append((y, self.position[0] + self.size[0] - 1))  # all right
+
+        return possible_tiles
+
     def shift_output_machines(self):
         # rolls the output machine list - so a new machine is outputted to
         self.output_machines = self.output_machines[1:] + self.output_machines[:1]
+        self.output_machine_tiles = self.output_machine_tiles[1:] + self.output_machine_tiles[:1]
 
     def check_accept_resource(self, resource):
         # checks if the machine could accept a certain resource
@@ -101,6 +119,8 @@ class GenericMachine(object):
         # WHEN CALLING ROTATE, NEED TO REBUILD OUTPUT_MACHINES
         self.rotation = new_rotation
         self.draw_handler.rotate(new_rotation)
+
+        self.output_machine_tiles = self.get_tiles_outputted_to()  # reset the tiles outputted to
 
 
 class ProcessingMachine(GenericMachine):
@@ -151,12 +171,14 @@ class ProcessingMachine(GenericMachine):
 
     def output_item(self):
         # attempts to output item from inventory to the first machine in the output_machines
-        if self.inventory[self.resource_out] > 0:
-            # pass to first item in output_machines that accepts it, and roll machine list
-            for output_machine in self.output_machines:
-                if output_machine.input_item(self.resource_out):
-                    self.inventory[self.resource_out] -= 1
-                    break
+
+        if self.output_callback is not None:  # check that callback it set
+            if self.inventory[self.resource_out] > 0:  # check that inventory contains resource
+                for output_tile in self.output_machine_tiles:  # try tiles in secession until success
+                    if self.output_callback(self.resource_out, output_tile):
+                        break
+        else:
+            print("OUTPUT CALLBACK NOT SET")
         self.shift_output_machines()
 
 
@@ -225,12 +247,12 @@ class ConveyorMachine(GenericMachine):
 
     def output_item(self):
         # output the oldest item to the output machine if not an EmptyIngotResource
-        if not isinstance(self.inventory[0], EmptyIngotResource):
-            # pass to first item in output_machines that accepts it, and roll machine list
-            for output_machine in self.output_machines:
-                if output_machine.input_item(self.inventory[0]):
-                    self.inventory.pop(0)
-                    break
+        if not isinstance(self.inventory[0], EmptyIngotResource):  # check not empty
+            if self.output_callback is not None:  # check callback is set
+                for output_tile in self.output_machine_tiles:  # check output tiles in secession (only 1)
+                    if self.output_callback(self.inventory[0], output_tile):
+                        self.inventory.pop(0)
+                        break
         self.shift_output_machines()
 
     def machine_process(self):

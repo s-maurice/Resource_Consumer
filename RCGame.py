@@ -13,6 +13,12 @@ class ResourceConsumerGame(object):
 
         self.placed_objects = game_map.placed_objects  # list of all the RCMachines, initially inherit from the map
 
+        self.placed_object_map = np.zeros(self.game_map.size, dtype=int).tolist()  # TODO replace with non np
+        # fill the placed object map with references to all the placed objects
+        for placed_object in self.placed_objects:
+            for tile_occupied in placed_object.get_tiles_occupied():
+                self.placed_object_map[tile_occupied[1]][tile_occupied[0]] = placed_object
+
         self.inventory = {}  # dict of RCResources and number
 
         self.tick = 0
@@ -45,7 +51,6 @@ class ResourceConsumerGame(object):
         # takes a prototype machine object - already initialised with position, and checks requirements
         # returns true or false depending on if the machine can be built
         assert isinstance(machine, GenericMachine)
-
         # check if inventory has enough materials to build machine and that there are no collisions
         for key, value in machine.build_cost.items():
             if self.inventory.get(key, 0) < value:
@@ -64,32 +69,44 @@ class ResourceConsumerGame(object):
         assert isinstance(machine, GenericMachine)
 
         if ignore_check or self.can_build_machine(machine):
-            # update the output list of all the touching machines and add this machine to output list - if applicable
-            # when machine is a conveyor, get_tiles_outputted_to() is overwritten to only check the faced block
-            outputting_to = machine.get_tiles_outputted_to()
-            for update_machine in self.placed_objects:
-                if any([update_machine.is_touching(tile) for tile in outputting_to]):  # machines are touching
+            # machine build routine
 
-                    # the update_machine accepts the machine's output
-                    if update_machine.check_accept_resource(machine.resource_out):
-                        machine.output_machines.append(update_machine)
-
-                    # the machine accepts the update_machine's output
-                    if machine.check_accept_resource(update_machine.resource_out):
-                        # check if update_machine is a conveyor, and handle it's directional output
-                        if isinstance(update_machine, ConveyorMachine):
-                            # update_machine is a conveyor, check if it's facing the right way
-                            if any([machine.is_touching(tile) for tile in update_machine.get_tiles_outputted_to()]):
-                                update_machine.output_machines.append(machine)
-                        else:
-                            update_machine.output_machines.append(machine)  # update machine is not a conveyor
-
+            # handle build cost
             if not ignore_build_cost:
-                # subtract build resources
                 for key, item in machine.build_cost.items():
                     self.inventory[key] -= item
 
-            self.placed_objects.append(machine)  # add machine to placed_object list
+            # set the callback for the machine
+            machine.output_callback = self.machine_output_callback
+
+            # add machine to placed_object list
+            self.placed_objects.append(machine)
+
+            # add machine to placed_object_map
+            for tile_occupied in machine.get_tiles_occupied():
+                self.placed_object_map[tile_occupied[1]][tile_occupied[0]] = self.placed_objects[-1]
+
+            return True
+        else:
+            return False
+
+    def check_update_machine(self, machine):
+        # takes a machine and checks to see if there are new machines touching it to output to
+        # only one way check - checks to see if it can output, but not if it can be inputted to
+        touching_machines = [self.placed_object_map[i[1]][i[0]] for i in machine.get_tiles_outputted_to()]
+        touching_machines = [i for i in touching_machines if i != 0]  # flat-iteration, filter out 0s
+
+        # can have the same machine multiple times - intended
+        # fully overwrite the output_machines list - oder is lost
+        for touching_machine in touching_machines:
+            if touching_machine.check_accept_resosurce(machine.resource_out):
+                machine.output_machines.append(touching_machine)
+
+    def machine_output_callback(self, resource, tile_tuple):
+        # used by the machines to callback to - takes resource and tuple of a single tile to try
+        # returns true if successfully inputted, otherwise false
+        machine_input_check = self.placed_object_map[tile_tuple[1]][tile_tuple[0]]
+        if machine_input_check != 0 and machine_input_check.input_item(resource):
             return True
         else:
             return False
@@ -97,27 +114,14 @@ class ResourceConsumerGame(object):
     def is_collision(self, machine):
         # checks if the given machine collides with any of the placed placed_objects
 
-        machine_min_x = machine.position[0]
-        machine_max_x = machine.position[0] + machine.size[0] - 1
-        machine_min_y = machine.position[1]
-        machine_max_y = machine.position[1] + machine.size[1] - 1
+        # using the placed_object_map
 
-        for placed_object in self.placed_objects:
-            placed_min_x = placed_object.position[0]
-            placed_max_x = placed_object.position[0] + placed_object.size[0] - 1
-            placed_min_y = placed_object.position[1]
-            placed_max_y = placed_object.position[1] + placed_object.size[1] - 1
+        tiles = []
+        for tile_occupied in machine.get_tiles_occupied():
+            tiles.append(self.placed_object_map[tile_occupied[1]][tile_occupied[0]])
 
-            # print(placed_max_x >= machine_min_x)
-            # print(placed_min_x <= machine_max_x)
-            # print(placed_max_y >= machine_min_y)
-            # print(placed_min_y <= machine_max_y)
-
-            if all([placed_max_x >= machine_min_x,
-                    placed_min_x <= machine_max_x,
-                    placed_max_y >= machine_min_y,
-                    placed_min_y <= machine_max_y]):
-                return True
+        if any([i != 0 for i in tiles]):
+            return True
         else:
             return False
 
