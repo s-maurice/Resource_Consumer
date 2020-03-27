@@ -93,6 +93,86 @@ class BackgroundDrawHandler(object):
             draw_handler.draw(surface, offsets, size)
 
 
+class BackgroundDrawHandler2(object):
+    # class for handling the drawing of the whole background and background additions
+    bg_texture_location = "mineindustry_sprites/background/{}.png"
+    bga_texture_location = "mineindustry_sprites/background_additions/{}.png"
+
+    def __init__(self, size, background_map, background_addition_map):
+        self.size = size
+
+        self.background_map = background_map
+        self.background_addition_map = background_addition_map
+
+        self.bg_texture_dict = {}
+        self.bga_texture_dict = {}
+
+        self.bg_texture_cur_size_dict = {}
+        self.bga_texture_cur_size_dict = {}
+        self.current_size = (50, 50)
+
+        # on init, iterate over both maps to build texture dicts
+        for y in range(self.size[1]):
+            for x in range(self.size[0]):
+                bg_item = self.background_map[x, y]
+                bga_item = self.background_addition_map[x, y]
+
+                if self.bg_texture_dict.get(bg_item, None) is None:
+                    self.load_new_bg_texture(bg_item)
+                if self.bga_texture_dict.get(bga_item, None) is None:
+                    self.load_new_bga_texture(bga_item)
+
+        # copy the full-size texture dicts to the current size ones
+        self.bg_texture_cur_size_dict = self.bg_texture_dict.copy()
+        self.bga_texture_cur_size_dict = self.bga_texture_dict.copy()
+
+    def load_new_bg_texture(self, texture_id):
+        # takes texture id of a background texture, loads it, and adds it to the texture dict
+
+        image_location = self.bg_texture_location.format(texture_id)  # format the base location to get the full path
+        image = pygame.image.load(image_location)
+        self.bg_texture_dict[texture_id] = image
+
+    def load_new_bga_texture(self, texture_id):
+        # takes texture id of a background texture, loads it, and adds it to the texture dict
+        if texture_id != 0:
+            image_location = self.bga_texture_location.format(texture_id)  # format the base location for full path
+            image = pygame.image.load(image_location)
+            self.bga_texture_dict[texture_id] = image
+
+    def draw_background(self, surface, offsets, size):
+        # update the size if there has been a change
+        if size != self.current_size:
+            self.current_size = size
+            for key, item in self.bg_texture_dict.items():
+                # get the size ratio - 2*2 tiles are 100*100px instead of 50*50px, so appropriate scaling
+                cur_image_full_size = item.get_size()
+                cur_new_size_x = round((cur_image_full_size[0] / 50) * (size[0] / 50) * 50)
+                cur_new_size_y = round((cur_image_full_size[1] / 50) * (size[1] / 50) * 50)
+                self.bg_texture_cur_size_dict[key] = pygame.transform.scale(item, (cur_new_size_x, cur_new_size_y))
+            for key, item in self.bga_texture_dict.items():
+                # get the size ratio - 2*2 tiles are 100*100px instead of 50*50px, so appropriate scaling
+                cur_image_full_size = item.get_size()
+                cur_new_size_x = round((cur_image_full_size[0] / 50) * (size[0] / 50) * 50)
+                cur_new_size_y = round((cur_image_full_size[1] / 50) * (size[1] / 50) * 50)
+                self.bga_texture_cur_size_dict[key] = pygame.transform.scale(item, (cur_new_size_x, cur_new_size_y))
+
+        # iterate through the map and draw using the dict of loaded textures
+        for y in range(self.size[1]):
+            for x in range(self.size[0]):
+                # can add offscreen checking to avoid drawing offscreen textures
+                # can refer to rotation map to change up textures
+                draw_pos_x = x * self.current_size[0] + offsets[0]
+                draw_pos_y = y * self.current_size[1] + offsets[1]
+
+                bg_item = self.background_map[x, y]
+                bga_item = self.background_addition_map[x, y]
+
+                surface.blit(self.bg_texture_cur_size_dict[bg_item], (draw_pos_x, draw_pos_y))
+                if bga_item != 0:
+                    surface.blit(self.bga_texture_cur_size_dict[bga_item], (draw_pos_x, draw_pos_y))
+
+
 class BackgroundTileDrawHandler(BaseDrawHandler):
     # class for handling the drawing of background tiles
     base_image_location = "mineindustry_sprites/background/{}.png"
