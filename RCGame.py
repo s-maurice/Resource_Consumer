@@ -13,7 +13,9 @@ class ResourceConsumerGame(object):
 
         self.placed_objects = game_map.placed_objects  # list of all the RCMachines, initially inherit from the map
 
-        self.placed_object_map = np.zeros(self.game_map.size, dtype=int).tolist()  # TODO replace with non np
+        # self.placed_object_map = np.zeros(self.game_map.size, dtype=int).tolist()
+        self.placed_object_map = [[0 for _ in range(self.game_map.size[0])] for _ in range(self.game_map.size[1])]
+
         # fill the placed object map with references to all the placed objects
         for placed_object in self.placed_objects:
             for tile_occupied in placed_object.get_tiles_occupied():
