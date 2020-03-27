@@ -1,5 +1,5 @@
 from RCMachineTypes import ProcessingMachine, ExtractingMachine, GenericMachine
-from RCResources import Sand, Lead, Glass, Titanium
+from RCResources import *
 
 
 class Processor1(ProcessingMachine):
@@ -41,3 +41,17 @@ machine_id_lookup = {Processor1.id: Processor1,
                      Extractor1.id: Extractor1,
                      Rock1.id: Rock1
                      }
+
+
+def machine_from_json(machine_dict):
+    machine = machine_id_lookup.get(int(machine_dict.get("id")))  # get correct machine type
+    machine = machine((machine_dict.get("pos")), machine_dict.get("rot"))  # call constructor
+    # place in other attributes
+    machine.time = machine_dict.get("time")
+
+    # handle machine's inventory
+    for key, item in machine_dict.get("inv").items():
+        res = resource_id_lookup.get(int(key))
+        machine.inventory[res] = item
+
+    return machine

@@ -3,15 +3,15 @@ import json
 import hashlib
 
 from RCGame import ResourceConsumerGame
+from RCMachines import machine_from_json
 from RCMapTypes import RandomMap
-from RCResources import Lead, Titanium
+from RCResources import Lead, Titanium, Sand, Glass
 from SocketProtocol import protocol_read, protocol_write
 
 
 class ResourceConsumerServer(object):
 
-    def __init__(self):
-        game_map = RandomMap()
+    def __init__(self, game_map):
         self.rcg = ResourceConsumerGame(game_map)
         self.hashed_password = None
 
@@ -50,8 +50,8 @@ class ResourceConsumerServer(object):
             }
 
             # encode and send out
-            initial_json = json.dumps(initial_dict)
-            await protocol_write(writer, initial_json)
+            print("INITIAL: Send {} to {}".format(initial_dict, address))
+            await protocol_write(writer, json.dumps(initial_dict))
 
             # create and run task for the freshly connected
             # this allows for clients to disconnect without crashing server
@@ -74,21 +74,62 @@ class ResourceConsumerServer(object):
         address = writer.get_extra_info('peername')
 
         # on task begin, create a queue for the data to be sent out to this client
-        self.client_outgoing_queue[address] = {"tick": 0, "placements": [], "removal_sel": []}
+        # tick too, but added just before send
+        # self.client_outgoing_queue[address] = {"tick": 0, "placements": [], "removal_sel": [], "inventory": []}
+        self.client_outgoing_queue[address] = {"placements": [], "removal_sel": [], "inventory": []}
 
         while True:
-            message = await protocol_read(reader)
+            # get incoming from client
+            client_data = await protocol_read(reader)
+            client_data = json.loads(client_data)
+            print("Received {} from {}".format(client_data, address))
 
-            print("Received {} from {}".format(message, address))
+            # handle incoming
+            tick = client_data.get("tick", None)
+            if tick is not None:
+                # tick should never be none
+                if tick != self.rcg.tick:
+                    print("DESYNC: client {} tick {}, server tick {}".format(address, tick, self.rcg.tick))
 
-            print("Sending tick: ", self.rcg.tick)
-            await protocol_write(writer, str(self.rcg.tick))
+            placements = client_data.get("placements", None)
+            if placements is not None:
+                for machine in placements:
+                    # handle machine placement here
+
+                    machine = machine_from_json(machine)
+                    if self.rcg.build_machine(machine):
+                        # machine is built and added to out_queue for all clients
+                        self.add_to_out_queue("placements", machine.to_json_serialisable())
+                    # sync inventories with all clients, even on failure - as it means desync
+                    self.add_to_out_queue("inventory", self.rcg.get_serialisable_inventory())
+
+            removal_sel = client_data.get("removal_sel", None)
+            if removal_sel is not None:
+                for removal in removal_sel:
+                    # handle selection removal here
+                    pass
+
+            # handle outgoing
+            # go through the outgoing_queue and find if the fields are populated, and create a minimised version
+            outgoing_queue = {"tick": self.rcg.tick}
+            for key, item in self.client_outgoing_queue[address].items():
+                if len(item) > 0:
+                    outgoing_queue[key] = item
+
+            print("Sending {} to {}".format(outgoing_queue, address))
+            await protocol_write(writer, json.dumps(outgoing_queue))
+            self.clear_outgoing_queue(address)  # clear the outgoing queue for this client
 
             await asyncio.sleep(2)
 
-    def add_to_out_queue(self, data_dict):
-        # adds the given data_dict to the queues of every client
-        pass
+    def add_to_out_queue(self, key, item_to_append):
+        # adds the given item_to_append to the queues of every client at the given key
+        for client_dict in self.client_outgoing_queue.values():
+            client_dict[key].append(item_to_append)
+
+    def clear_outgoing_queue(self, client):
+        # clears the outgoing queue for a single client
+        self.client_outgoing_queue[client] = {"placements": [], "removal_sel": [], "inventory": []}
 
     async def start_networking(self):
         # called to start the networking - constantly runs establish connection to try to establish new connections
@@ -118,11 +159,14 @@ class ResourceConsumerServer(object):
 
 
 if __name__ == "__main__":
-    rcs = ResourceConsumerServer()
+    random_game_map = RandomMap()
+    rcs = ResourceConsumerServer(random_game_map)
 
     # for debug give resources
     rcs.rcg.inventory[Lead] = 1000
     rcs.rcg.inventory[Titanium] = 1000
+    rcs.rcg.inventory[Sand] = 1000
+    rcs.rcg.inventory[Glass] = 1000
 
     rcs.set_hashed_password("yeet")
     asyncio.run(rcs.main())

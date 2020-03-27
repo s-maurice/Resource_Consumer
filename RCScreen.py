@@ -10,9 +10,9 @@ from RCScreenGUI import RCScreenGUI
 
 class RCScreen(object):
     # class to handle the overall window, interaction and rendering of a ResourceConsumerGame object
-    def __init__(self, rcg: ResourceConsumerGame, callback_outgoing_queue):
+    def __init__(self, rcg: ResourceConsumerGame, callback_outgoing_queue_func):
         self.rcg = rcg
-        self.callback_outgoing = callback_outgoing_queue
+        self.callback_outgoing = callback_outgoing_queue_func
 
         self.input_handler = InputHandler()
         self.framerate_handler = FramerateHandler(30)
@@ -155,16 +155,13 @@ class RCScreen(object):
                     if m_inputs[0]["down_pos"][1] == m_inputs[0]["up_pos"][1]:  # compare the game pos
                         print("place building at", m_inputs[0]["up_pos"][1], self.selected_machine)
 
-                        machine = self.selected_machine(m_inputs[0]["up_pos"][1], 0)
+                        machine = self.selected_machine(list(m_inputs[0]["up_pos"][1]), 0)
                         if self.rcg.can_build_machine(machine):
                             # add to the staging callback queue so the client can send to server
-                            self.callback_outgoing["placements"].append(machine)
-
-                        # DEBUG
-                        # a = self.rcg.build_tile(machine, ignore_check=True)
-                        # print("building built", a)
+                            self.callback_outgoing("placements", machine.to_json_serialisable())
 
         # right click drag selection
+        pass
 
         # update the gui with the mouse position and mouse input handler
         self.gui.update(mouse_pos, m_inputs)

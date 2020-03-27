@@ -45,22 +45,25 @@ class ResourceConsumerGame(object):
         # takes a prototype machine object - already initialised with position, and checks requirements
         # returns true or false depending on if the machine can be built
         assert isinstance(machine, GenericMachine)
+
         # check if inventory has enough materials to build machine and that there are no collisions
         for key, value in machine.build_cost.items():
             if self.inventory.get(key, 0) < value:
+                # print("FAIL INV")
                 break
         else:
             if not self.is_collision(machine):
                 return True
-
+            else:
+                pass
         return False
 
-    def build_tile(self, machine, ignore_check=False):
+    def build_machine(self, machine, ignore_check=False, ignore_build_cost=False):
         # takes a prototype machine object - already initialised with position, and checks requirements
         # if all requirements are satisfied, append to placed_objects and return true, otherwise false
         assert isinstance(machine, GenericMachine)
 
-        if self.can_build_machine(machine) or ignore_check:
+        if ignore_check or self.can_build_machine(machine):
             # update the output list of all the touching machines and add this machine to output list - if applicable
             # when machine is a conveyor, get_tiles_outputted_to() is overwritten to only check the faced block
             outputting_to = machine.get_tiles_outputted_to()
@@ -81,6 +84,11 @@ class ResourceConsumerGame(object):
                         else:
                             update_machine.output_machines.append(machine)  # update machine is not a conveyor
 
+            if not ignore_build_cost:
+                # subtract build resources
+                for key, item in machine.build_cost.items():
+                    self.inventory[key] -= item
+
             self.placed_objects.append(machine)  # add machine to placed_object list
             return True
         else:
@@ -100,8 +108,15 @@ class ResourceConsumerGame(object):
             placed_min_y = placed_object.position[1]
             placed_max_y = placed_object.position[1] + placed_object.size[1] - 1
 
-            if ((placed_max_x >= machine_min_x or placed_min_x <= machine_max_x) and
-                    (placed_max_y >= machine_min_y or placed_min_y <= machine_max_y)):
+            # print(placed_max_x >= machine_min_x)
+            # print(placed_min_x <= machine_max_x)
+            # print(placed_max_y >= machine_min_y)
+            # print(placed_min_y <= machine_max_y)
+
+            if all([placed_max_x >= machine_min_x,
+                    placed_min_x <= machine_max_x,
+                    placed_max_y >= machine_min_y,
+                    placed_min_y <= machine_max_y]):
                 return True
         else:
             return False
@@ -138,7 +153,7 @@ class ResourceConsumerGame(object):
         # machine.output_machines = machine_dict.get("outmachines")  # client and server build upon adding
 
         # check if this received machine satisfies the build requirements and build
-        if self.build_tile(machine):
+        if self.build_machine(machine):
             # build is successful - return the serialisable machine (with server's output_machine for sending to client
             return self.placed_objects[-1]
         else:
