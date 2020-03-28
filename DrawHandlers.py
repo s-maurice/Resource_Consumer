@@ -128,8 +128,11 @@ class BackgroundDrawHandler2(object):
                     self.load_new_bga_texture(bga_item)
 
         # copy the full-size texture dicts to the current size ones
-        self.bg_texture_cur_size_dict = self.bg_texture_dict.copy()
-        self.bga_texture_cur_size_dict = self.bga_texture_dict.copy()
+        # the cur_size_dicts will store a list for every rotation - for speed
+        for key, item in self.bg_texture_dict.items():
+            self.bg_texture_cur_size_dict[key] = [pygame.transform.rotate(item, i*90) for i in range(4)]
+        for key, item in self.bga_texture_dict.items():
+            self.bga_texture_cur_size_dict[key] = [pygame.transform.rotate(item, i*90) for i in range(4)]
 
     def load_new_bg_texture(self, texture_id):
         # takes texture id of a background texture, loads it, and adds it to the texture dict
@@ -154,13 +157,20 @@ class BackgroundDrawHandler2(object):
                 cur_image_full_size = item.get_size()
                 cur_new_size_x = round((cur_image_full_size[0] / 50) * (size[0] / 50) * 50)
                 cur_new_size_y = round((cur_image_full_size[1] / 50) * (size[1] / 50) * 50)
-                self.bg_texture_cur_size_dict[key] = pygame.transform.scale(item, (cur_new_size_x, cur_new_size_y))
+                # scale the texture
+                scaled_texture = pygame.transform.scale(item, (cur_new_size_x, cur_new_size_y))
+                # rotate the texture for the stored rotations
+                self.bg_texture_cur_size_dict[key] = [pygame.transform.rotate(scaled_texture, i*90) for i in range(4)]
+
             for key, item in self.bga_texture_dict.items():
                 # get the size ratio - 2*2 tiles are 100*100px instead of 50*50px, so appropriate scaling
                 cur_image_full_size = item.get_size()
                 cur_new_size_x = round((cur_image_full_size[0] / 50) * (size[0] / 50) * 50)
                 cur_new_size_y = round((cur_image_full_size[1] / 50) * (size[1] / 50) * 50)
-                self.bga_texture_cur_size_dict[key] = pygame.transform.scale(item, (cur_new_size_x, cur_new_size_y))
+                # scale the texture
+                scaled_texture = pygame.transform.scale(item, (cur_new_size_x, cur_new_size_y))
+                # rotate the texture for the stored rotations
+                self.bga_texture_cur_size_dict[key] = [pygame.transform.rotate(scaled_texture, i*90) for i in range(4)]
 
         # iterate through the map and draw using the dict of loaded textures
         for y in range(self.size[1]):
@@ -177,22 +187,16 @@ class BackgroundDrawHandler2(object):
                 # handle the background
                 if bg_item != 0:
                     # get the texture from dict
-                    bg_texture = self.bg_texture_cur_size_dict[bg_item]
-                    # handle random rotations - this way rotates them every frame (slow)  # TODO store every rotation
                     bg_rotation = self.background_rotation_map[x, y]
-                    if bg_rotation != 0:
-                        bg_texture = pygame.transform.rotate(bg_texture, 90*bg_rotation)
+                    bg_texture = self.bg_texture_cur_size_dict[bg_item][bg_rotation]  # get pre-rotated texture
                     # draw to surface
                     surface.blit(bg_texture, (draw_pos_x, draw_pos_y))
 
                 # handle the background additions
                 if bga_item != 0:
                     # get the texture from dict
-                    bga_texture = self.bga_texture_cur_size_dict[bga_item]
-                    # handle random rotations - this way rotates them every frame (slow)
                     bga_rotation = self.background_addition_rotation_map[x, y]
-                    if bga_rotation != 0:
-                        bga_texture = pygame.transform.rotate(bga_texture, 90 * bga_rotation)
+                    bga_texture = self.bga_texture_cur_size_dict[bga_item][bga_rotation]  # get pre-rotated texture
                     # draw to surface
                     surface.blit(bga_texture, (draw_pos_x, draw_pos_y))
 
