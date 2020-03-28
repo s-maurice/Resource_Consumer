@@ -136,15 +136,15 @@ class BackgroundDrawHandler2(object):
 
     def load_new_bg_texture(self, texture_id):
         # takes texture id of a background texture, loads it, and adds it to the texture dict
-
-        image_location = self.bg_texture_location.format(texture_id)  # format the base location to get the full path
-        image = pygame.image.load(image_location)
-        self.bg_texture_dict[texture_id] = image
+        if texture_id != 0:
+            image_location = self.bg_texture_location.format(texture_id)  # format base location for full path
+            image = pygame.image.load(image_location)
+            self.bg_texture_dict[texture_id] = image
 
     def load_new_bga_texture(self, texture_id):
         # takes texture id of a background texture, loads it, and adds it to the texture dict
         if texture_id != 0:
-            image_location = self.bga_texture_location.format(texture_id)  # format the base location for full path
+            image_location = self.bga_texture_location.format(texture_id)  # format base location for full path
             image = pygame.image.load(image_location)
             self.bga_texture_dict[texture_id] = image
 
