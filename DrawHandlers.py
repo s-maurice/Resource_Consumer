@@ -106,19 +106,19 @@ class MachineDrawHandler2(object):
 
         # on init, iterate over machines and generate a texture dict
         for machine in machine_list:
-            if self.machine_texture_dict.get(machine.id, None) is None:
-                self.load_machine_texture(machine.id)
+            if self.machine_texture_dict.get(machine.image_name, None) is None:
+                self.load_machine_texture(machine.image_name)
 
         # copy the full size texture dict to the current size ones
         self.machine_texture_cur_size_dict = self.machine_texture_dict.copy()
         self.current_size = (50, 50)
 
-    def load_machine_texture(self, texture_id):
+    def load_machine_texture(self, texture_name):
         # takes texture id of a machine texture, loads it, and adds it to the texture dict
-        if texture_id != 0:
-            image_location = self.machine_texture_location.format(texture_id)  # format base location for full path
+        if texture_name != 0:
+            image_location = self.machine_texture_location.format(texture_name)  # format base location for full path
             image = pygame.image.load(image_location)
-            self.machine_texture_dict[texture_id] = image
+            self.machine_texture_dict[texture_name] = image
 
     def draw_machines(self, surface, offsets, size):
         # draws all the machines onto the surface
@@ -141,7 +141,7 @@ class MachineDrawHandler2(object):
             draw_pos_y = machine.position[1] * self.current_size[1] + offsets[1]
 
             # get the texture from the dict
-            machine_texture = self.machine_texture_cur_size_dict[machine.id]
+            machine_texture = self.machine_texture_cur_size_dict[machine.image_name]
 
             # handle machine rotation - for machines this is done every frame
             if machine.rotation != 0:

@@ -2,6 +2,7 @@ import math
 
 import pygame
 
+from DrawHandlers import MachineDrawHandler2
 from RateHandlers import FrameRateHandler
 from InputHandler import InputHandler
 from RCGame import ResourceConsumerGame, GenericMachine
@@ -51,6 +52,8 @@ class RCScreen(object):
         # run flag for main
         self.run = False
 
+        self.machine_draw_handler = MachineDrawHandler2(self.rcg.placed_objects)
+
     def draw(self):
         # draw a single frame of the game
 
@@ -63,8 +66,9 @@ class RCScreen(object):
         self.rcg.game_map.draw_handler.draw_background(self.bg_surface, self.offsets, (self.tile_size, self.tile_size))
 
         # draw the machines
-        for machine in self.rcg.placed_objects:
-            machine.draw_handler.draw(self.machine_surface, self.offsets, (self.tile_size, self.tile_size))
+        # for machine in self.rcg.placed_objects:
+        #     machine.draw_handler.draw(self.machine_surface, self.offsets, (self.tile_size, self.tile_size))
+        self.machine_draw_handler.draw_machines(self.machine_surface, self.offsets, (self.tile_size, self.tile_size))
 
         # draw the gui
         self.gui.draw(self.surface_hud)
