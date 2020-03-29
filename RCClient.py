@@ -180,7 +180,8 @@ class ResourceConsumerClient(object):
         self.reader, self.writer = await networking_task
 
         # once connection has been established
-        await asyncio.sleep(1)  # wait so client isn't ahead of server
+        # await asyncio.sleep(1)  # wait so client isn't ahead of server
+
         # create and run the main game loop task and renderer task
         game_task = asyncio.create_task(self.game_loop())
         render_task = asyncio.create_task(self.game_render_loop())
