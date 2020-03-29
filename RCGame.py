@@ -57,8 +57,6 @@ class ResourceConsumerGame(object):
                     self.placed_objects.remove(value)
                     self.placed_object_map[y_idx][x_idx] = 0
 
-
-
     def can_build_machine(self, machine):
         # takes a prototype machine object - already initialised with position, and checks requirements
         # returns true or false depending on if the machine can be built
@@ -112,16 +110,13 @@ class ResourceConsumerGame(object):
             return False
 
     def is_collision(self, machine):
-        # checks if the given machine collides with any of the placed placed_objects
-
+        # checks if the given machine collides with any of the placed placed_objects or the map edge,
         # using the placed_object_map
-
-        tiles = []
         for tile_occupied in machine.get_tiles_occupied():
-            tiles.append(self.placed_object_map[tile_occupied[1]][tile_occupied[0]])
-
-        if any([i != 0 for i in tiles]):
-            return True
+            if (not (0 <= tile_occupied[0] < self.game_map.size[0] and
+                     0 <= tile_occupied[1] < self.game_map.size[1]) or
+                    self.placed_object_map[tile_occupied[1]][tile_occupied[0]] != 0):
+                return True
         else:
             return False
 
@@ -143,8 +138,3 @@ class ResourceConsumerGame(object):
         for key, item in self.inventory.items():
             inv[key.id] = item
         return inv
-
-
-
-
-
