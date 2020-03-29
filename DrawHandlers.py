@@ -123,7 +123,7 @@ class MachineDrawHandler2(object):
     def draw_machines(self, surface, offsets, size):
         # draws all the machines onto the surface
 
-        # if size changed, handler resizing
+        # if size changed, handle resizing
         if size != self.current_size:
             self.current_size = size
             for key, item in self.machine_texture_dict.items():
