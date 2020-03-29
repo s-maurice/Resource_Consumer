@@ -2,7 +2,7 @@ import math
 
 import pygame
 
-from DrawHandlers import MachineDrawHandler2
+from DrawHandlers import MachineDrawHandler2, SelectionDrawHandler
 from RateHandlers import FrameRateHandler
 from InputHandler import InputHandler
 from RCGame import ResourceConsumerGame, GenericMachine
@@ -30,11 +30,15 @@ class RCScreen(object):
         # set up surfaces
         self.bg_surface = pygame.Surface(self.window_size)
         self.machine_surface = pygame.Surface(self.window_size, pygame.SRCALPHA)  # per pixel alpha
-        self.surface_hud = pygame.Surface(self.window_size, pygame.SRCALPHA)  # per pixel alpha
+        self.hud_surface = pygame.Surface(self.window_size, pygame.SRCALPHA)  # per pixel alpha
+        self.selection_surface = pygame.Surface(self.window_size, pygame.SRCALPHA)  # per pixel alpha
 
         # set up GUI
         self.selected_machine = None  # used for the gui to callback to
         self.gui = RCScreenGUI(self.rcg, self.set_selected_machine)
+
+        # set up selection
+        self.selection = {"down": [None, None], "cur": [None, None], "down_offsets": [None, None]}
 
         # zoom and camera position limits and speeds
         self.tile_size_min = 10
@@ -53,6 +57,7 @@ class RCScreen(object):
         self.run = False
 
         self.machine_draw_handler = MachineDrawHandler2(self.rcg.placed_objects)
+        self.selection_draw_handler = SelectionDrawHandler()
 
     def draw(self):
         # draw a single frame of the game
@@ -60,7 +65,8 @@ class RCScreen(object):
         # reset the surfaces to blank
         self.bg_surface.fill((0, 0, 0))
         self.machine_surface.fill((0, 0, 0, 0))  # alpha value of 0 needed
-        self.surface_hud.fill((0, 0, 0, 0))  # alpha value of 0 needed
+        self.selection_surface.fill((0, 0, 0, 0))
+        self.hud_surface.fill((0, 0, 0, 0))  # alpha value of 0 needed
 
         # draw the background
         self.rcg.game_map.draw_handler.draw_background(self.bg_surface, self.offsets, (self.tile_size, self.tile_size))
@@ -72,13 +78,20 @@ class RCScreen(object):
         # MachineDrawHandler2
         self.machine_draw_handler.draw_machines(self.machine_surface, self.offsets, (self.tile_size, self.tile_size))
 
+        # draw the selection
+        self.selection_draw_handler.draw(self.selection_surface,
+                                         self.offsets,
+                                         (self.tile_size, self.tile_size),
+                                         self.selection)
+
         # draw the gui
-        self.gui.draw(self.surface_hud)
+        self.gui.draw(self.hud_surface)
 
         # Update screen surface
         self.screen.blit(self.bg_surface, (0, 0))
         self.screen.blit(self.machine_surface, (0, 0))
-        self.screen.blit(self.surface_hud, (0, 0))
+        self.screen.blit(self.selection_surface, (0, 0))
+        self.screen.blit(self.hud_surface, (0, 0))
         pygame.display.flip()
 
     def adjust_camera_offset(self, direction):
@@ -156,7 +169,7 @@ class RCScreen(object):
         if m_inputs[0]["up_pos"] != [None, None]:
             if self.selected_machine is not None:  # check if a building is selected
                 if self.is_on_map(m_inputs[0]["up_pos"][1]):
-                    # need to check if on gui
+                    # need to check if on gui and ignore if so
                     if m_inputs[0]["down_pos"][1] == m_inputs[0]["up_pos"][1]:  # compare the game pos
                         print("place building at", m_inputs[0]["up_pos"][1], self.selected_machine)
 
@@ -166,7 +179,16 @@ class RCScreen(object):
                             self.callback_outgoing("placements", machine.to_json_serialisable())
 
         # right click drag selection
-        pass
+        if m_inputs[2]["down_pos"] != [None, None]:
+            self.selection["down"] = m_inputs[2]["down_pos"]
+            self.selection["cur"] = [mouse_pos, self.px_to_game_tile(mouse_pos)]
+            if self.selection["down_offsets"] == [None, None]:
+                self.selection["down_offsets"] = self.offsets  # also store offsets at down - but unused
+        else:
+            # on no selection - default to [None, None]
+            self.selection["down"] = [None, None]
+            self.selection["cur"] = [None, None]
+            self.selection["down_offsets"] = [None, None]
 
         # update the gui with the mouse position and mouse input handler
         self.gui.update(mouse_pos, m_inputs)

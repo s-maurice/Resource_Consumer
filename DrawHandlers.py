@@ -270,6 +270,70 @@ class BackgroundDrawHandler2(object):
                     surface.blit(bga_texture, (draw_pos_x, draw_pos_y))
 
 
+class SelectionDrawHandler(object):
+    # class for handling the drawing of selected tiles on the map
+    def __init__(self):
+        self.tile_selection_colour = (255, 0, 0)
+        self.mouse_selection_colour = (100, 0, 0)
+
+        # selection widths
+        self.tile_sel_width = 3
+        self.tile_sel_width_ratio = 13
+        self.tile_sel_min_width = 1
+
+        self.mouse_sel_width = 2
+        self.mouse_sel_width_ratio = 13
+        self.mouse_sel_min_width = 1
+
+        self.current_size = (50, 50)
+
+    def draw(self, surface, offsets, size, selection):
+        # draws the selections onto the given surface, mouse_input_down and mouse_input_cur are lists of tuples, for
+        # pixel and tile position of the selection start and selection end/current - [(px_x, px_y), (tile_x, tile_y)]
+
+        mouse_input_down = selection.get("down")
+        mouse_input_cur = selection.get("cur")
+
+        # only draw if there is a selection
+        if mouse_input_down != [None, None] and mouse_input_cur != [None, None]:
+            if size != self.current_size:
+                self.current_size = size
+                self.tile_sel_width = max(size[0] // self.tile_sel_width_ratio, self.tile_sel_min_width)
+                self.mouse_sel_width = max(size[0] // self.mouse_sel_width_ratio, self.mouse_sel_min_width)
+
+            # handle the tile positions, find the boundary tiles
+            start_x = min(mouse_input_down[1][0], mouse_input_cur[1][0])
+            start_y = min(mouse_input_down[1][1], mouse_input_cur[1][1])
+            end_x = max(mouse_input_down[1][0], mouse_input_cur[1][0])
+            end_y = max(mouse_input_down[1][1], mouse_input_cur[1][1])
+
+            # draw all the tile boxes
+            for x in range(start_x, end_x+1):
+                for y in range(start_y, end_y+1):
+                    draw_pos_x = x * size[0] + offsets[0]
+                    draw_pos_y = y * size[1] + offsets[1]
+
+                    pygame.draw.rect(surface,
+                                     self.tile_selection_colour,
+                                     (draw_pos_x, draw_pos_y, size[0], size[1]),
+                                     self.tile_sel_width)
+
+            # handle the overall pixel selection box, find the box size and origin - same as above
+            start_x = min(mouse_input_down[0][0], mouse_input_cur[0][0])
+            start_y = min(mouse_input_down[0][1], mouse_input_cur[0][1])
+            end_x = max(mouse_input_down[0][0], mouse_input_cur[0][0])
+            end_y = max(mouse_input_down[0][1], mouse_input_cur[0][1])
+
+            # could just be done with min() and abs() value
+            pixel_selection_size_x = end_x - start_x
+            pixel_selection_size_y = end_y - start_y
+
+            pygame.draw.rect(surface,
+                             self.mouse_selection_colour,
+                             (start_x, start_y, pixel_selection_size_x, pixel_selection_size_y),
+                             self.mouse_sel_width)
+
+
 class BackgroundTileDrawHandler(BaseDrawHandler):
     # class for handling the drawing of background tiles
     base_image_location = "mineindustry_sprites/background/{}.png"
