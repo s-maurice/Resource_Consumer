@@ -120,6 +120,13 @@ class MachineDrawHandler2(object):
             image = pygame.image.load(image_location)
             self.machine_texture_dict[texture_name] = image
 
+            # also load resized version
+            cur_image_full_size = image.get_size()
+            cur_size_x = round((cur_image_full_size[0] / 50) * (self.current_size[0] / 50) * 50)
+            cur_size_y = round((cur_image_full_size[1] / 50) * (self.current_size[1] / 50) * 50)
+
+            self.machine_texture_cur_size_dict[texture_name] = pygame.transform.scale(image, (cur_size_x, cur_size_y))
+
     def draw_machines(self, surface, offsets, size):
         # draws all the machines onto the surface
 
@@ -137,6 +144,11 @@ class MachineDrawHandler2(object):
 
         # iterate through machines and draw using the scaled dict
         for machine in self.machine_list:
+            # load the texture if not currently loaded
+            if self.machine_texture_dict.get(machine.image_name, None) is None:
+                self.load_machine_texture(machine.image_name)
+
+            # get the draw position
             draw_pos_x = machine.position[0] * self.current_size[0] + offsets[0]
             draw_pos_y = machine.position[1] * self.current_size[1] + offsets[1]
 
