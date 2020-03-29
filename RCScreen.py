@@ -66,8 +66,10 @@ class RCScreen(object):
         self.rcg.game_map.draw_handler.draw_background(self.bg_surface, self.offsets, (self.tile_size, self.tile_size))
 
         # draw the machines
+        # MachineDrawHandler
         # for machine in self.rcg.placed_objects:
         #     machine.draw_handler.draw(self.machine_surface, self.offsets, (self.tile_size, self.tile_size))
+        # MachineDrawHandler2
         self.machine_draw_handler.draw_machines(self.machine_surface, self.offsets, (self.tile_size, self.tile_size))
 
         # draw the gui
