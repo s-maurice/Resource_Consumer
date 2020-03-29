@@ -94,6 +94,63 @@ class BackgroundDrawHandler(object):
             draw_handler.draw(surface, offsets, size)
 
 
+class MachineDrawHandler2(object):
+    # handles the drawing of the machines - all machines handled by one object
+
+    machine_texture_location = "mineindustry_sprites/machines/{}.png"
+
+    def __init__(self, machine_list):
+        self.machine_list = machine_list
+
+        self.machine_texture_dict = {}
+
+        # on init, iterate over machines and generate a texture dict
+        for machine in machine_list:
+            if self.machine_texture_dict.get(machine.id, None) is None:
+                self.load_machine_texture(machine.id)
+
+        # copy the full size texture dict to the current size ones
+        self.machine_texture_cur_size_dict = self.machine_texture_dict.copy()
+        self.current_size = (50, 50)
+
+    def load_machine_texture(self, texture_id):
+        # takes texture id of a machine texture, loads it, and adds it to the texture dict
+        if texture_id != 0:
+            image_location = self.machine_texture_location.format(texture_id)  # format base location for full path
+            image = pygame.image.load(image_location)
+            self.machine_texture_dict[texture_id] = image
+
+    def draw_machines(self, surface, offsets, size):
+        # draws all the machines onto the surface
+
+        # if size changed, handler resizing
+        if size != self.current_size:
+            self.current_size = size
+            for key, item in self.machine_texture_dict.items():
+                # get the size ratio - 2*2 tiles are 100*100px instead of 50*50px, so appropriate scaling
+                cur_image_full_size = item.get_size()
+                cur_new_size_x = round((cur_image_full_size[0] / 50) * (size[0] / 50) * 50)
+                cur_new_size_y = round((cur_image_full_size[1] / 50) * (size[1] / 50) * 50)
+                # scale the texture
+                scaled_texture = pygame.transform.scale(item, (cur_new_size_x, cur_new_size_y))
+                self.machine_texture_cur_size_dict[key] = scaled_texture
+
+        # iterate through machines and draw using the scaled dict
+        for machine in self.machine_list:
+            draw_pos_x = machine.position[0] * self.current_size[0] + offsets[0]
+            draw_pos_y = machine.position[1] * self.current_size[1] + offsets[1]
+
+            # get the texture from the dict
+            machine_texture = self.machine_texture_cur_size_dict[machine.id]
+
+            # handle machine rotation - for machines this is done every frame
+            if machine.rotation != 0:
+                machine_texture = pygame.transform.rotate(machine_texture, machine.rotation * 90)
+
+            # draw to surface
+            surface.blit(machine_texture, (draw_pos_x, draw_pos_y))
+
+
 class BackgroundDrawHandler2(object):
     # class for handling the drawing of the whole background and background additions
     bg_texture_location = "mineindustry_sprites/background/{}.png"
