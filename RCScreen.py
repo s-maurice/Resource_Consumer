@@ -2,7 +2,7 @@ import math
 
 import pygame
 
-from FramerateHandler import FramerateHandler
+from RateHandlers import FrameRateHandler
 from InputHandler import InputHandler
 from RCGame import ResourceConsumerGame, GenericMachine
 from RCScreenGUI import RCScreenGUI
@@ -15,7 +15,6 @@ class RCScreen(object):
         self.callback_outgoing = callback_outgoing_queue_func
 
         self.input_handler = InputHandler()
-        self.framerate_handler = FramerateHandler(30)
 
         pygame.init()
 
@@ -191,9 +190,11 @@ class RCScreen(object):
 
     async def main(self):
         # main loop for handling every frame of the screen
+        framerate_handler = FrameRateHandler(30)
+
         self.run = True
         while self.run:
-            self.framerate_handler.frame_start()  # start the framerate_handler's frame
+            framerate_handler.period_start()  # start the framerate_handler's frame
 
             # use input_handler and method to apply all the needed inputs/actions
             self.handle_events()
@@ -202,4 +203,4 @@ class RCScreen(object):
             self.draw()
 
             # dynamically await using the framerate_handler
-            await self.framerate_handler.frame_end()
+            await framerate_handler.period_end()

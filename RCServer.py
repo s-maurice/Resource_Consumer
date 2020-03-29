@@ -6,6 +6,7 @@ from RCGame import ResourceConsumerGame
 from RCMachines import machine_from_json
 from RCMapTypes import RandomMap
 from RCResources import Lead, Titanium, Sand, Glass
+from RateHandlers import NetworkRateHandler, GameRateHandler
 from SocketProtocol import protocol_read, protocol_write
 
 
@@ -78,7 +79,10 @@ class ResourceConsumerServer(object):
         # self.client_outgoing_queue[address] = {"tick": 0, "placements": [], "removal_sel": [], "inventory": []}
         self.client_outgoing_queue[address] = {"placements": [], "removal_sel": [], "inventory": []}
 
+        network_rate_handler = NetworkRateHandler(1)
         while True:
+            network_rate_handler.period_start()
+
             # get incoming from client
             client_data = await protocol_read(reader)
             client_data = json.loads(client_data)
@@ -120,7 +124,7 @@ class ResourceConsumerServer(object):
             await protocol_write(writer, json.dumps(outgoing_queue))
             self.clear_outgoing_queue(address)  # clear the outgoing queue for this client
 
-            await asyncio.sleep(2)
+            await network_rate_handler.period_end()
 
     def add_to_out_queue(self, key, item_to_append):
         # adds the given item_to_append to the queues of every client at the given key
@@ -144,10 +148,15 @@ class ResourceConsumerServer(object):
 
     async def game_loop(self):
         # main loop for the game, controlling the game's tick speed
+        game_rate_handler = GameRateHandler(1)
+
         while True:
+            game_rate_handler.period_start()
+
             self.rcg.tick_game()
             print("Game Tick: ", self.rcg.tick)
-            await asyncio.sleep(2)
+
+            await game_rate_handler.period_end()
 
     async def main(self):
         # creates and runs the tasks

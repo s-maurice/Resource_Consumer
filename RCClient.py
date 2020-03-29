@@ -8,6 +8,7 @@ from RCMachines import machine_id_lookup, machine_from_json
 from RCMaps import *
 from RCMapTypes import SentMap
 from RCResources import resource_id_lookup, inventory_from_json
+from RateHandlers import GameRateHandler, NetworkRateHandler
 from SocketProtocol import protocol_read, protocol_write
 
 
@@ -93,7 +94,10 @@ class ResourceConsumerClient(object):
 
     async def handle_connection(self):
         # infinitely loops, handling the main connection with the server
+        network_rate_handler = NetworkRateHandler(1)
         while True:
+            network_rate_handler.period_start()
+
             # go through the outgoing_queue and find if the fields are populated, and create a minimised version
             outgoing_queue = {"tick": self.rcg.tick}
             for key, item in self.outgoing_queue.items():
@@ -144,7 +148,7 @@ class ResourceConsumerClient(object):
                 #         print("DESYNC: inv resource {} not matching. Server: {}, Client: {}".format(res, item, self.rcg.inventory[res]))
                 #     self.rcg.inventory[res] = item
 
-            await asyncio.sleep(2)
+            await network_rate_handler.period_end()
 
     def add_to_outgoing_queue(self, key, item_to_append):
         # takes a key and item to append to one of the lists in the outgoing queue
@@ -157,10 +161,14 @@ class ResourceConsumerClient(object):
 
     async def game_loop(self):
         # main loop for the game, controlling the game's tick speed
+        game_rate_handler = GameRateHandler(1)
         while True:
+            game_rate_handler.period_start()
+
             self.rcg.tick_game()
             print("Client Tick: ", self.rcg.tick)
-            await asyncio.sleep(2)
+
+            await game_rate_handler.period_end()
 
     async def game_render_loop(self):
         self.rcs = RCScreen(self.rcg, self.add_to_outgoing_queue)
