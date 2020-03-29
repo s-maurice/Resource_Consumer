@@ -109,6 +109,14 @@ class GenericMachine(object):
         self.output_machine_tiles = self.get_tiles_outputted_to()  # reset the tiles outputted to
 
 
+class DecorationMachine(GenericMachine):
+    # machine only serves as decoration, does not input or output
+
+    @staticmethod
+    def input_item(item):
+        return False
+
+
 class ProcessingMachine(GenericMachine):
     # class for machines with input and output
 

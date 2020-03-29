@@ -1,4 +1,4 @@
-from RCMachineTypes import ProcessingMachine, ExtractingMachine, GenericMachine
+from RCMachineTypes import ProcessingMachine, ExtractingMachine, GenericMachine, DecorationMachine
 from RCResources import *
 
 
@@ -28,7 +28,7 @@ class Extractor1(ExtractingMachine):
     build_cost = {Lead: 20}  # dict with RCResource and number needed
 
 
-class Rock1(GenericMachine):
+class Rock1(DecorationMachine):
     id = 3
     image_name = "rock"
 
