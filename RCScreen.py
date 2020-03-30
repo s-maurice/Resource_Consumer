@@ -77,7 +77,6 @@ class RCScreen(object):
         #     machine.draw_handler.draw(self.machine_surface, self.offsets, (self.tile_size, self.tile_size))
         # MachineDrawHandler2
         self.machine_draw_handler.draw_machines(self.machine_surface, self.offsets, (self.tile_size, self.tile_size))
-
         # draw the selection
         self.selection_draw_handler.draw(self.selection_surface,
                                          self.offsets,
@@ -190,6 +189,10 @@ class RCScreen(object):
             self.selection["cur"] = [None, None]
             self.selection["down_offsets"] = [None, None]
 
+        # on right click release, send selection to game for dismantling
+        if m_inputs[2]["up_pos"] != [None, None]:
+            self.rcg.dismantle_selection(self.selection)  # dismantle selection auto finds the correct corners
+
         # update the gui with the mouse position and mouse input handler
         self.gui.update(mouse_pos, m_inputs)
 
@@ -223,7 +226,6 @@ class RCScreen(object):
         self.run = True
         while self.run:
             framerate_handler.period_start()  # start the framerate_handler's frame
-
             # use input_handler and method to apply all the needed inputs/actions
             self.handle_events()
 

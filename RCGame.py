@@ -25,7 +25,7 @@ class ResourceConsumerGame(object):
 
         self.tick = 0
 
-    def dismantle_selection(self, selection_start, selection_end):
+    def dismantle_selection(self, selection):
         # # selection_start is a tuple (x, y) of where the top left corner of the selection is
         # # selection_end is a tuple (x, y) of where the bottom right corner of the selection is
         # # mostly a modified version of is_collision() below
@@ -49,13 +49,21 @@ class ResourceConsumerGame(object):
         #         new_placed_objects.append(placed_object)  # no collision, so append
         # self.placed_objects = new_placed_objects
 
-        # there are problems, such as selection that starts at bottom right and moves to top left
-        for y_idx, row in enumerate(self.placed_object_map[selection_start[1]:selection_end[1]]):
-            for x_idx, value in enumerate(row[selection_start[0]:selection_end[0]]):
-                if value != 0:
+        # identify the starting and ending corners
+        start_x = min(selection["down"][1][0], selection["cur"][1][0])
+        start_y = min(selection["down"][1][1], selection["cur"][1][1])
+        end_x = max(selection["down"][1][0], selection["cur"][1][0])
+        end_y = max(selection["down"][1][1], selection["cur"][1][1])
+
+        # iterate through the placed_object_map
+        for y_idx, row in enumerate(self.placed_object_map[start_y:end_y+1]):
+            for x_idx, value in enumerate(row[start_x:end_x+1]):
+                if isinstance(value, GenericMachine):
                     # need to check if list.remove() works
-                    self.placed_objects.remove(value)
-                    self.placed_object_map[y_idx][x_idx] = 0
+                    if value in self.placed_objects:
+                        self.placed_objects.remove(value)
+                        for tile_occupied in value.get_tiles_occupied():
+                            self.placed_object_map[tile_occupied[1]][tile_occupied[0]] = 0
 
     def can_build_machine(self, machine):
         # takes a prototype machine object - already initialised with position, and checks requirements
