@@ -103,15 +103,14 @@ class MachineDrawHandler2(object):
         self.machine_list = machine_list
 
         self.machine_texture_dict = {}
+        self.machine_texture_cur_size_dict = {}
+
+        self.current_size = (50, 50)
 
         # on init, iterate over machines and generate a texture dict
         for machine in machine_list:
             if self.machine_texture_dict.get(machine.image_name, None) is None:
                 self.load_machine_texture(machine.image_name)
-
-        # copy the full size texture dict to the current size ones
-        self.machine_texture_cur_size_dict = self.machine_texture_dict.copy()
-        self.current_size = (50, 50)
 
     def load_machine_texture(self, texture_name):
         # takes texture id of a machine texture, loads it, and adds it to the texture dict
