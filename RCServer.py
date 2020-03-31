@@ -84,9 +84,13 @@ class ResourceConsumerServer(object):
             network_rate_handler.period_start()
 
             # get incoming from client
-            client_data = await protocol_read(reader)
-            client_data = json.loads(client_data)
-            print("Received {} from {}".format(client_data, address))
+            try:
+                client_data = await protocol_read(reader)
+                client_data = json.loads(client_data)
+                print("Received {} from {}".format(client_data, address))
+            except ConnectionResetError:
+                print("Client {} disconnected. (receive attempt)".format(address))
+                return
 
             # handle incoming
             # handle tick
@@ -123,9 +127,14 @@ class ResourceConsumerServer(object):
                 if len(item) > 0:
                     outgoing_queue[key] = item
 
-            print("Sending {} to {}".format(outgoing_queue, address))
-            await protocol_write(writer, json.dumps(outgoing_queue))
-            self.clear_outgoing_queue(address)  # clear the outgoing queue for this client
+            # send out to client
+            try:
+                print("Sending {} to {}".format(outgoing_queue, address))
+                await protocol_write(writer, json.dumps(outgoing_queue))
+                self.clear_outgoing_queue(address)  # clear the outgoing queue for this client
+            except ConnectionResetError:
+                print("Client {} disconnected. (send attempt)".format(address))
+                return
 
             await network_rate_handler.period_end()
 
