@@ -36,6 +36,10 @@ class RCMapBase(object):
 
         return details
 
+    def get_empty_placed_object_map(self):
+        # gets an empty 2d list of lists of all zeros the size of this map - ignores any placed objects on the map
+        return [[0 for _ in range(self.size[0])] for _ in range(self.size[1])]
+
 
 class StoredMap(RCMapBase):
     def __init__(self):

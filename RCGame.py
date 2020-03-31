@@ -4,17 +4,17 @@ from RCMachineTypes import *
 from RCMachines import *
 from RCResourceTypes import *
 from RCResources import *
-from RCMapTypes import RandomMap
+from RCMapTypes import RandomMap, RCMapBase
 
 
 class ResourceConsumerGame(object):
     def __init__(self, game_map):
+        assert isinstance(game_map, RCMapBase)
         self.game_map = game_map  # game_map object
 
         self.placed_objects = game_map.placed_objects  # list of all the RCMachines, initially inherit from the map
 
-        # self.placed_object_map = np.zeros(self.game_map.size, dtype=int).tolist()
-        self.placed_object_map = [[0 for _ in range(self.game_map.size[0])] for _ in range(self.game_map.size[1])]
+        self.placed_object_map = self.game_map.get_empty_placed_object_map()
 
         # fill the placed object map with references to all the placed objects
         for placed_object in self.placed_objects:
