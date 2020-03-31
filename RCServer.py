@@ -89,17 +89,16 @@ class ResourceConsumerServer(object):
             print("Received {} from {}".format(client_data, address))
 
             # handle incoming
+            # handle tick
             tick = client_data.get("tick", None)
             if tick is not None:
-                # tick should never be none
                 if tick != self.rcg.tick:
                     print("DESYNC: client {} tick {}, server tick {}".format(address, tick, self.rcg.tick))
 
+            # handle machine placement
             placements = client_data.get("placements", None)
             if placements is not None:
                 for machine in placements:
-                    # handle machine placement here
-
                     machine = machine_from_json(machine)
                     if self.rcg.build_machine(machine):
                         # machine is built and added to out_queue for all clients
@@ -107,11 +106,15 @@ class ResourceConsumerServer(object):
                     # sync inventories with all clients, even on failure - as it means desync
                     self.add_to_out_queue("inventory", self.rcg.get_serialisable_inventory())
 
+            # handle selection removal
             removal_sel = client_data.get("removal_sel", None)
             if removal_sel is not None:
                 for removal in removal_sel:
-                    # handle selection removal here
-                    pass
+                    self.rcg.dismantle_selection(removal)
+                    # add to queue for all clients
+                    self.add_to_out_queue("removal_sel", removal)
+                    # resync all objects - but can be more selective in the future
+                    [self.add_to_out_queue("resync_machines", o.to_json_serialisable()) for o in self.rcg.placed_objects]
 
             # handle outgoing
             # go through the outgoing_queue and find if the fields are populated, and create a minimised version
@@ -133,7 +136,10 @@ class ResourceConsumerServer(object):
 
     def clear_outgoing_queue(self, client):
         # clears the outgoing queue for a single client
-        self.client_outgoing_queue[client] = {"placements": [], "removal_sel": [], "inventory": []}
+        self.client_outgoing_queue[client] = {"placements": [],
+                                              "removal_sel": [],
+                                              "inventory": [],
+                                              "resync_machines": []}
 
     async def start_networking(self):
         # called to start the networking - constantly runs establish connection to try to establish new connections

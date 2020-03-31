@@ -38,7 +38,7 @@ class RCScreen(object):
         self.gui = RCScreenGUI(self.rcg, self.set_selected_machine)
 
         # set up selection
-        self.selection = {"down": [None, None], "cur": [None, None], "down_offsets": [None, None]}
+        self.selection = {"down": [None, None], "cur": [None, None]}
 
         # zoom and camera position limits and speeds
         self.tile_size_min = 10
@@ -181,17 +181,16 @@ class RCScreen(object):
         if m_inputs[2]["down_pos"] != [None, None]:
             self.selection["down"] = m_inputs[2]["down_pos"]
             self.selection["cur"] = [mouse_pos, self.px_to_game_tile(mouse_pos)]
-            if self.selection["down_offsets"] == [None, None]:
-                self.selection["down_offsets"] = self.offsets  # also store offsets at down - but unused
         else:
             # on no selection - default to [None, None]
             self.selection["down"] = [None, None]
             self.selection["cur"] = [None, None]
-            self.selection["down_offsets"] = [None, None]
 
-        # on right click release, send selection to game for dismantling
+        # on right click release, send selection to client to send to server for dismantling
         if m_inputs[2]["up_pos"] != [None, None]:
-            self.rcg.dismantle_selection(self.selection)  # dismantle selection auto finds the correct corners
+            tile_selection = {"start": self.selection["down"][1], "end": self.selection["cur"][1]}
+            print(tile_selection)
+            self.callback_outgoing("removal_sel", tile_selection)
 
         # update the gui with the mouse position and mouse input handler
         self.gui.update(mouse_pos, m_inputs)

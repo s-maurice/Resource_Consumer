@@ -14,6 +14,9 @@ from SocketProtocol import protocol_read, protocol_write
 
 class ResourceConsumerClient(object):
 
+    rcg: ResourceConsumerGame
+    rcs: RCScreen
+
     def __init__(self):
         self.reader = None
         self.writer = None
@@ -114,38 +117,53 @@ class ResourceConsumerClient(object):
             print("Receive:", server_data)
 
             # handle incoming
+            # handle tick
             tick = server_data.get("tick", None)
             if tick is not None:
                 # tick should never be none
                 if tick != self.rcg.tick:
                     print("DESYNC: server tick {}, client tick {}".format(tick, self.rcg.tick))
 
+            # handle machine placements
             placements = server_data.get("placements", None)
             if placements is not None:
                 for machine in placements:
-                    # handle machine placement here
-
                     machine = machine_from_json(machine)
                     if not self.rcg.build_machine(machine):
                         print("DESYNC: server could build machine but client could not")
 
+            # handle selection removal
             removal_sel = server_data.get("removal_sel", None)
             if removal_sel is not None:
                 for removal in removal_sel:
-                    # handle selection removal here
+                    self.rcg.dismantle_selection(removal)
 
-                    pass
+            # handle machines to be re-synchronised
+            resync_machines = server_data.get("resync_machines", None)
+            if resync_machines is not None:
+                for machine_dict in resync_machines:
+                    for machine in self.rcg.placed_objects:
+                        if machine.position == machine_dict.get("pos"):
+                            # handle sync time
+                            machine.time = machine_dict.get("time")
+                            # handle sync inventory
+                            for key, item in machine_dict.get("inv").items():
+                                res = resource_id_lookup.get(int(key))
+                                machine.inventory[res] = item
+                            break
+                    else:
+                        print("DESYNC: Server had machine at pos: {}, client did not.".format(machine_dict.get("pos")))
 
+            # deal with inventory synchronisation
             inv_dict = server_data.get("inventory", None)
             if inv_dict is not None:
-                # handle inventory synchronisation here
                 self.rcg.inventory = inventory_from_json(inv_dict[0])
-
                 # for debug, iterate through and print differences
                 # for key, item in inv_dict.items():
                 #     res = resource_id_lookup.get(int(key))
                 #     if self.rcg.inventory[res] != item:
-                #         print("DESYNC: inv resource {} not matching. Server: {}, Client: {}".format(res, item, self.rcg.inventory[res]))
+                #         print("DESYNC: inv resource {} not matching.")
+                #         print("Server: {}, Client: {}".format(res, item, self.rcg.inventory[res]))
                 #     self.rcg.inventory[res] = item
 
             await network_rate_handler.period_end()
