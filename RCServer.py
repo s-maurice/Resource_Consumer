@@ -5,7 +5,7 @@ import hashlib
 from RCGame import ResourceConsumerGame
 from RCMachines import machine_from_json
 from RCMapTypes import RandomMap
-from RCResources import Lead, Titanium, Sand, Glass
+from RCResources import Copper, Titanium, Sand, Glass
 from RateHandlers import NetworkRateHandler, GameRateHandler
 from SocketProtocol import protocol_read, protocol_write
 
@@ -187,7 +187,7 @@ if __name__ == "__main__":
     rcs = ResourceConsumerServer(random_game_map)
 
     # for debug give resources
-    rcs.rcg.inventory[Lead] = 1000
+    rcs.rcg.inventory[Copper] = 1000
     rcs.rcg.inventory[Titanium] = 1000
     rcs.rcg.inventory[Sand] = 1000
     rcs.rcg.inventory[Glass] = 1000

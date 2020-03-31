@@ -13,10 +13,10 @@ class Titanium(IngotResource):
     resource_name = "Titanium"
 
 
-class Lead(IngotResource):
+class Copper(IngotResource):
     id = 2
-    image_name = "lead"
-    resource_name = "Lead"
+    image_name = "copper"
+    resource_name = "copper"
 
 
 class Sand(IngotResource):
@@ -31,11 +31,18 @@ class Glass(IngotResource):
     resource_name = "Glass"
 
 
+class Thorium(IngotResource):
+    id = 5
+    image_name = "thorium"
+    resource_name = "Thorium"
+
+
 resource_id_lookup = {EmptyIngotResource.id: EmptyIngotResource,
                       Titanium.id: Titanium,
-                      Lead.id: Lead,
+                      Copper.id: Copper,
                       Sand.id: Sand,
-                      Glass.id: Glass
+                      Glass.id: Glass,
+                      Thorium.id: Thorium,
                       }
 
 

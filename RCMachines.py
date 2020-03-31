@@ -1,4 +1,4 @@
-from RCMachineTypes import ProcessingMachine, ExtractingMachine, GenericMachine, DecorationMachine
+from RCMachineTypes import ProcessingMachine, ExtractingMachine, GenericMachine, DecorationMachine, ConveyorMachine
 from RCResources import *
 
 
@@ -12,7 +12,20 @@ class Processor1(ProcessingMachine):
     max_capacity = {Sand: 10, Glass: 10}  # dict with RCResource and max capacity, include resource_out
     speed = 10
 
-    build_cost = {Lead: 20, Titanium: 1}  # dict with RCResource and number needed
+    build_cost = {Copper: 20, Titanium: 1}  # dict with RCResource and number needed
+
+
+class Processor2(ProcessingMachine):
+    id = 1
+    image_name = "processor2"
+
+    size = (1, 1)
+    resource_in = {Sand: 1}  # dict with RCResource and number needed
+    resource_out = Glass  # RCResource
+    max_capacity = {Sand: 10, Glass: 10}  # dict with RCResource and max capacity, include resource_out
+    speed = 10
+
+    build_cost = {Copper: 20, Titanium: 1}  # dict with RCResource and number needed
 
 
 class Extractor1(ExtractingMachine):
@@ -25,7 +38,33 @@ class Extractor1(ExtractingMachine):
     max_capacity = {Sand: 10}  # only resource out and capacity
     speed = 10
 
-    build_cost = {Lead: 20}  # dict with RCResource and number needed
+    build_cost = {Copper: 20}  # dict with RCResource and number needed
+
+
+class Extractor2(ExtractingMachine):
+    id = 2
+    image_name = "extractor2"
+
+    size = (2, 2)
+    resource_in = {}  # empty dict
+    resource_out = Sand  # RCResource
+    max_capacity = {Sand: 10}  # only resource out and capacity
+    speed = 10
+
+    build_cost = {Copper: 20}  # dict with RCResource and number needed
+
+
+class Extractor3(ExtractingMachine):
+    id = 2
+    image_name = "extractor3"
+
+    size = (1, 1)
+    resource_in = {}  # empty dict
+    resource_out = Sand  # RCResource
+    max_capacity = {Sand: 10}  # only resource out and capacity
+    speed = 10
+
+    build_cost = {Copper: 20}  # dict with RCResource and number needed
 
 
 class Rock1(DecorationMachine):
@@ -37,9 +76,19 @@ class Rock1(DecorationMachine):
     build_cost = {}
 
 
+class Conveyor1(ConveyorMachine):
+    size = (1, 1)
+    max_capacity = 10
+    speed = 10
+
+
 machine_id_lookup = {Processor1.id: Processor1,
+                     Processor2.id: Processor2,
                      Extractor1.id: Extractor1,
-                     Rock1.id: Rock1
+                     Extractor2.id: Extractor2,
+                     Extractor3.id: Extractor3,
+                     Rock1.id: Rock1,
+                     Conveyor1.id: Conveyor1
                      }
 
 
