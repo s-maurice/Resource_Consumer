@@ -143,7 +143,7 @@ class ResourceConsumerClient(object):
             if resync_machines is not None:
                 for machine_dict in resync_machines:
                     for machine in self.rcg.placed_objects:
-                        if machine.position == machine_dict.get("pos"):
+                        if machine.position == machine_dict.get("pos") and machine.id == machine_dict.get("id"):
                             # handle sync time
                             machine.time = machine_dict.get("time")
                             # handle sync inventory
