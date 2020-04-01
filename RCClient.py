@@ -3,7 +3,7 @@ import hashlib
 import json
 
 from RCScreen import RCScreen
-from RCGame import ResourceConsumerGame
+from RCGame import ResourceConsumerGame, ConveyorMachine
 from RCMachines import machine_id_lookup, machine_from_json
 from RCMaps import *
 from RCMapTypes import SentMap
@@ -147,9 +147,13 @@ class ResourceConsumerClient(object):
                             # handle sync time
                             machine.time = machine_dict.get("time")
                             # handle sync inventory
-                            for key, item in machine_dict.get("inv").items():
-                                res = resource_id_lookup.get(int(key))
-                                machine.inventory[res] = item
+                            if isinstance(machine, ConveyorMachine):
+                                # conveyor machines use inv list
+                                machine.inventory = [resource_id_lookup.get(int(i)) for i in machine_dict.get("inv")]
+                            else:
+                                for key, item in machine_dict.get("inv").items():
+                                    res = resource_id_lookup.get(int(key))
+                                    machine.inventory[res] = item
                             break
                     else:
                         print("DESYNC: Server had machine at pos: {}, client did not.".format(machine_dict.get("pos")))

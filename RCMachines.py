@@ -102,8 +102,13 @@ def machine_from_json(machine_dict):
     machine.time = machine_dict.get("time")
 
     # handle machine's inventory
-    for key, item in machine_dict.get("inv").items():
-        res = resource_id_lookup.get(int(key))
-        machine.inventory[res] = item
+    if isinstance(machine, ConveyorMachine):
+        # conveyor machines use inv list
+        machine.inventory = [resource_id_lookup.get(int(i)) for i in machine_dict.get("inv")]
+    else:
+        # normal machines use inv dict
+        for key, item in machine_dict.get("inv").items():
+            res = resource_id_lookup.get(int(key))
+            machine.inventory[res] = item
 
     return machine
