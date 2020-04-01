@@ -212,6 +212,7 @@ class MachineDrawHandler2(object):
                         if self.ingot_texture_dict.get(ingot.image_name, None) is None:
                             self.load_ingot_texture(ingot.image_name)
 
+                        # handle correctional offsets
                         corr_offset = [0, 0]
                         if draw_dir[0] < 0:
                             corr_offset[0] += (self.current_size[0] - spacing_offset)

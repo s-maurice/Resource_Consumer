@@ -2,8 +2,9 @@ import asyncio
 import hashlib
 import json
 
+from RCMachineTypes import ConveyorMachine
 from RCScreen import RCScreen
-from RCGame import ResourceConsumerGame, ConveyorMachine
+from RCGame import ResourceConsumerGame
 from RCMachines import machine_id_lookup, machine_from_json
 from RCMaps import *
 from RCMapTypes import SentMap
