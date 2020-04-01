@@ -248,10 +248,12 @@ class ConveyorMachine(GenericMachine):
 
     def machine_process(self):
         # shifts items on conveyor forwards if there are EmptyIngotResources at the front
-        if isinstance(self.inventory[0], EmptyIngotResource):
-            self.inventory.pop(0)
+        if len(self.inventory) < self.max_capacity:
             self.inventory.append(EmptyIngotResource)
-
+        if issubclass(self.inventory[0], EmptyIngotResource):  # use issubclass() because not init
+            self.inventory.pop(0)
+        if len(self.inventory) < self.max_capacity:
+            self.inventory.append(EmptyIngotResource)
         # at the end, increment the timer
         self.timer += 1
 
