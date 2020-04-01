@@ -115,6 +115,14 @@ class DecorationMachine(GenericMachine):
     def input_item(item):
         return False
 
+    @staticmethod
+    def output_item():
+        pass
+
+    @staticmethod
+    def machine_process():
+        pass
+
 
 class ProcessingMachine(GenericMachine):
     # class for machines with input and output
