@@ -212,17 +212,15 @@ class ConveyorMachine(GenericMachine):
         # gets the coordinates of the block that this conveyor outputs to - override for list of single position
 
         # convert the rotation value from range(0, 4) to correct offsets
+        facing = [0, 0]
         if self.rotation == 0:
-            facing = (0, -1)
+            facing[1] -= 1
         elif self.rotation == 1:
-            facing = (1, 0)
+            facing[0] -= 1
         elif self.rotation == 2:
-            facing = (0, -1)
+            facing[1] += 1
         elif self.rotation == 3:
-            facing = (-1, 0)
-        else:
-            print("Rotation out of legal range")
-            facing = (0, 0)
+            facing[0] += 1
 
         x_output = self.position[0] + self.size[0] - 1 + facing[0]
         y_output = self.position[1] + self.size[1] - 1 + facing[1]
