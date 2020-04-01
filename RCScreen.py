@@ -69,7 +69,7 @@ class RCScreen(object):
         self.bg_surface.fill((0, 0, 0))
         self.machine_surface.fill((0, 0, 0, 0))  # alpha value of 0 needed
         self.selection_surface.fill((0, 0, 0, 0))
-        self.hud_surface.fill((0, 0, 0, 0))  # alpha value of 0 needed
+        # self.hud_surface.fill((0, 0, 0, 0))  # don't need to re-draw hud on every frame
 
         # draw the background
         self.background_draw_handler.draw_background(self.bg_surface, self.offsets, (self.tile_size, self.tile_size))
@@ -218,8 +218,13 @@ class RCScreen(object):
 
     def set_selected_machine(self, machine):
         # setter for setting the currently selected machine - used by the RCScreenGUI for callback
-        assert issubclass(machine, GenericMachine)  # because not inited
-        self.selected_machine = machine
+        assert issubclass(machine, GenericMachine)  # using issubclass() because not inited
+
+        # handle un-selecting a machine
+        if self.selected_machine == machine:
+            self.selected_machine = None
+        else:
+            self.selected_machine = machine
 
     async def main(self):
         # main loop for handling every frame of the screen

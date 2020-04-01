@@ -6,15 +6,14 @@ from RCMachines import *
 class RCScreenGUI(object):
     # class for the gui of the game
     def __init__(self, rcg, selected_machine_callback):
-        self.rcg = rcg  # passed through so buttons can interact
+        # pass through
+        self.rcg = rcg
+        self.selected_machine_callback = selected_machine_callback
 
         self.buttons = []
 
-        colour1 = (20, 50, 60)
-        colour2 = (120, 150, 160)
-
         for index, machine in enumerate(machine_id_lookup.values()):
-            self.buttons.append(BuildButton((1000 - 50*(index+1), 700), colour1, machine, selected_machine_callback))
+            self.buttons.append(BuildButton((1000 - 50*(index+1), 700), machine, self.selected_callback_passthrough))
 
     def draw(self, surface):
         # takes a surface and draws the gui and all of the buttons onto it
@@ -29,23 +28,42 @@ class RCScreenGUI(object):
         for button in self.buttons:
             button.update(mouse_pos, m_inputs)
 
+    def selected_callback_passthrough(self, selected_machine):
+        for button in self.buttons:
+            button.selected = False
+            button.hovered = False
+            button.redraw = True
+
+        self.selected_machine_callback(selected_machine)
+
 
 class GUIButton(object):
     # class for an individual button on the gui
-    def __init__(self, pos, colour):
+    def __init__(self, pos):
+
+        self.pos = pos
 
         self.rect_size = (50, 50)
         self.colour = (100, 100, 100)
         self.rect = [950, 700, 50, 50]
 
-        self.colour = colour
         self.rect[0], self.rect[1] = pos[0], pos[1]
 
         self.rect = pygame.Rect(self.rect)
+
+        self.cur_draw_hover_state = True
         self.hovered = False
+        self.hover_drawn = False
+
+        self.selected = False
+
+        self.redraw = False
 
     def draw(self, surface):
-        pygame.draw.rect(surface, self.colour, self.rect)
+        # only draw on hover state change
+        if self.hovered != self.cur_draw_hover_state:
+            self.cur_draw_hover_state = self.hovered
+            pygame.draw.rect(surface, self.colour, self.rect)
 
     def button_pressed(self):
         # called when the button is pressed, mainly to be overridden
@@ -67,12 +85,47 @@ class GUIButton(object):
 
 class BuildButton(GUIButton):
     # class for selecting a building
-    def __init__(self, pos, colour, machine, selected_machine_callback):
-        super().__init__(pos, colour)
+    machine_texture_location = "mineindustry_sprites/machines/{}.png"
+
+    def __init__(self, pos, machine, selected_machine_callback):
+        super().__init__(pos)
         self.machine = machine
+
+        # load the texture
+        image_location = self.machine_texture_location.format(machine.image_name)
+        machine_texture = pygame.image.load(image_location)
+        self.machine_texture = pygame.transform.scale(machine_texture, (self.rect_size[0], self.rect_size[1]))
+
         self.selected_machine_callback = selected_machine_callback
+
+    def draw(self, surface):
+        # only draw if hover state changes
+        if self.hovered != self.cur_draw_hover_state or self.redraw:
+            self.redraw = False
+            self.cur_draw_hover_state = self.hovered
+
+            temp_surface = pygame.Surface(self.rect_size, pygame.SRCALPHA)
+            temp_surface.fill((255, 255, 255))
+
+            temp_surface.blit(self.machine_texture, (0, 0))
+
+            if self.hovered:
+                pygame.draw.rect(temp_surface, (255, 255, 255, 50), (0, 0, self.rect_size[0], self.rect_size[1]))
+            if self.selected:
+                pygame.draw.rect(temp_surface, (30, 30, 30, 200), (0, 0, self.rect_size[0], self.rect_size[1]), 7)
+
+            surface.blit(temp_surface, (self.pos[0], self.pos[1]))
 
     def button_pressed(self):
         # overridden method
-        print("selected", self.machine)
+        print("pressed", self.machine)
+
+        # preserve the state
+        selected = self.selected
+
+        # callback - also sets selected for all machines to false and redraws them
         self.selected_machine_callback(self.machine)
+
+        # flip selected status and redraw again
+        self.selected = False if selected else True
+        self.redraw = True
