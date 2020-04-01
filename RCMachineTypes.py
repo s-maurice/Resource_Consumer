@@ -194,7 +194,7 @@ class ExtractingMachine(ProcessingMachine):
 class ConveyorMachine(GenericMachine):
     # for conveyors, custom inventory, rendering
     size = (1, 1)
-    max_capacity = 10
+    max_capacity = 3
     speed = 10
     # for rendering, use stages and increment every tick - need to keep order of inventory - queue?
 
@@ -216,11 +216,11 @@ class ConveyorMachine(GenericMachine):
         if self.rotation == 0:
             facing[1] -= 1
         elif self.rotation == 1:
-            facing[0] -= 1
+            facing[0] += 1
         elif self.rotation == 2:
             facing[1] += 1
         elif self.rotation == 3:
-            facing[0] += 1
+            facing[0] -= 1
 
         x_output = self.position[0] + self.size[0] - 1 + facing[0]
         y_output = self.position[1] + self.size[1] - 1 + facing[1]

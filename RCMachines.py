@@ -81,7 +81,7 @@ class Conveyor1(ConveyorMachine):
     image_name = "conveyor1"
 
     size = (1, 1)
-    max_capacity = 10
+    max_capacity = 3
     speed = 10
 
 
