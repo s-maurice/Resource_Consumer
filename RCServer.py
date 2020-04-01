@@ -192,20 +192,28 @@ if __name__ == "__main__":
     rcs.rcg.inventory[Sand] = 1000
     rcs.rcg.inventory[Glass] = 1000
 
-    conv = Conveyor1((5, 5), 2)
-    print(conv.input_item(Copper))
+    conv = Conveyor1((5, 5), 0)
+    conv.inventory = [Copper for _ in range(len(conv.inventory))]
+    conv.inventory[0] = Titanium
+    print(conv.get_tiles_outputted_to())
     rcs.rcg.build_machine(conv)
 
-    conv = Conveyor1((7, 7), 3)
-    print(conv.input_item(Copper))
+    conv = Conveyor1((7, 5), 1)
+    conv.inventory = [Copper for _ in range(len(conv.inventory))]
+    conv.inventory[0] = Titanium
+    print(conv.get_tiles_outputted_to())
     rcs.rcg.build_machine(conv)
 
-    conv = Conveyor1((10, 10), 1)
-    print(conv.input_item(Copper))
+    conv = Conveyor1((10, 5), 2)
+    conv.inventory = [Copper for _ in range(len(conv.inventory))]
+    conv.inventory[0] = Titanium
+    print(conv.get_tiles_outputted_to())
     rcs.rcg.build_machine(conv)
 
-    conv = Conveyor1((12, 12), 0)
-    print(conv.input_item(Copper))
+    conv = Conveyor1((12, 5), 3)
+    conv.inventory = [Copper for _ in range(len(conv.inventory))]
+    conv.inventory[0] = Titanium
+    print(conv.get_tiles_outputted_to())
     rcs.rcg.build_machine(conv)
 
     rcs.set_hashed_password("yeet")
