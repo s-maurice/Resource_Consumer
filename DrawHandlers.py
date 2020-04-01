@@ -3,6 +3,8 @@ import random
 import pygame
 import numpy as np
 
+from RCMachineTypes import ConveyorMachine
+
 
 class BaseDrawHandler(pygame.sprite.Sprite):
     # base class for pygame drawing
@@ -98,12 +100,16 @@ class MachineDrawHandler2(object):
     # handles the drawing of the machines - all machines handled by one object
 
     machine_texture_location = "mineindustry_sprites/machines/{}.png"
+    ingot_texture_location = "mineindustry_sprites/resources/ingot/{}.png"
 
     def __init__(self, machine_list):
         self.machine_list = machine_list
 
         self.machine_texture_dict = {}
         self.machine_texture_cur_size_dict = {}
+
+        self.ingot_texture_dict = {}
+        self.ingot_texture_cur_size_dict = {}
 
         self.current_size = (50, 50)
 
@@ -119,12 +125,26 @@ class MachineDrawHandler2(object):
             image = pygame.image.load(image_location)
             self.machine_texture_dict[texture_name] = image
 
-            # also load resized version
+            # also load resized version - special handing to preserve size of larger images
             cur_image_full_size = image.get_size()
             cur_size_x = round((cur_image_full_size[0] / 50) * (self.current_size[0] / 50) * 50)
             cur_size_y = round((cur_image_full_size[1] / 50) * (self.current_size[1] / 50) * 50)
 
             self.machine_texture_cur_size_dict[texture_name] = pygame.transform.scale(image, (cur_size_x, cur_size_y))
+
+    def load_ingot_texture(self, texture_name):
+        # takes texture id of an ingot resource, loads it, and adds it to the ingot texture dict
+        if texture_name != 0:
+            image_location = self.ingot_texture_location.format(texture_name)
+            image = pygame.image.load(image_location)
+            self.ingot_texture_dict[texture_name] = image_location
+
+            # also load resized version
+            cur_image_full_size = image.get_size()
+            cur_size_x = round((cur_image_full_size[0] / 25) * (self.current_size[0] / 50) * 10)
+            cur_size_y = round((cur_image_full_size[1] / 25) * (self.current_size[1] / 50) * 10)
+
+            self.ingot_texture_cur_size_dict[texture_name] = pygame.transform.scale(image, (cur_size_x, cur_size_y))
 
     def draw_machines(self, surface, offsets, size):
         # draws all the machines onto the surface
@@ -132,6 +152,7 @@ class MachineDrawHandler2(object):
         # if size changed, handle resizing
         if size != self.current_size:
             self.current_size = size
+            # handle machine textures
             for key, item in self.machine_texture_dict.items():
                 # get the size ratio - 2*2 tiles are 100*100px instead of 50*50px, so appropriate scaling
                 cur_image_full_size = item.get_size()
@@ -140,6 +161,16 @@ class MachineDrawHandler2(object):
                 # scale the texture
                 scaled_texture = pygame.transform.scale(item, (cur_new_size_x, cur_new_size_y))
                 self.machine_texture_cur_size_dict[key] = scaled_texture
+
+            # handle resource textures
+            for key, item in self.ingot_texture_dict.items():
+                # get size ratio
+                cur_image_full_size = item.get_size()
+                cur_new_size_x = round((cur_image_full_size[0] / 25) * (self.current_size[0] / 50) * 10)
+                cur_new_size_y = round((cur_image_full_size[1] / 25) * (self.current_size[1] / 50) * 10)
+                # scale the texture
+                scaled_texture = pygame.transform.scale(item, (cur_new_size_x, cur_new_size_y))
+                self.ingot_texture_cur_size_dict[key] = scaled_texture
 
         # iterate through machines and draw using the scaled dict
         for machine in self.machine_list:
@@ -157,6 +188,29 @@ class MachineDrawHandler2(object):
             # handle machine rotation - for machines this is done every frame
             if machine.rotation != 0:
                 machine_texture = pygame.transform.rotate(machine_texture, machine.rotation * 90)
+
+            # special handling for conveyor machines, need to draw resources as well
+            if isinstance(machine, ConveyorMachine):
+                # identify the draw direction, also pre-calculate the amount of offset per ingot
+                draw_dir = [0, 0]
+                if machine.rotation == 0:
+                    draw_dir[1] -= 1 * self.current_size[1] / len(machine.inventory)
+                elif machine.rotation == 1:
+                    draw_dir[0] -= 1 * self.current_size[0] / len(machine.inventory)
+                elif machine.rotation == 2:
+                    draw_dir[1] += 1 * self.current_size[1] / len(machine.inventory)
+                elif machine.rotation == 3:
+                    draw_dir[0] += 1 * self.current_size[0] / len(machine.inventory)
+
+                for index, ingot in enumerate(machine.inventory):
+                    if ingot.id != 0:  # ignore EmptyIngotResource
+                        # get the draw position for the ingot
+                        ingot_draw_pos_x = round(draw_pos_x + (self.current_size[0] / 5) + (draw_dir[0] * index))
+                        ingot_draw_pos_y = round(draw_pos_y + (self.current_size[1] / 5) + (draw_dir[1] * index))
+
+                        # get the texture from the dict
+                        ingot_texture = self.ingot_texture_cur_size_dict[ingot.image_name]
+                        surface.blit(ingot_texture, (ingot_draw_pos_x, ingot_draw_pos_y))
 
             # draw to surface
             surface.blit(machine_texture, (draw_pos_x, draw_pos_y))
