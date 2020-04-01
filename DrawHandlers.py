@@ -198,11 +198,11 @@ class MachineDrawHandler2(object):
                 draw_dir = [0, 0]
                 spacing_offset = self.current_size[1] / len(machine.inventory)
                 if machine.rotation == 0:
-                    draw_dir[1] -= 1
+                    draw_dir[1] += 1
                 elif machine.rotation == 1:
                     draw_dir[0] -= 1
                 elif machine.rotation == 2:
-                    draw_dir[1] += 1
+                    draw_dir[1] -= 1
                 elif machine.rotation == 3:
                     draw_dir[0] += 1
 
@@ -212,9 +212,19 @@ class MachineDrawHandler2(object):
                         if self.ingot_texture_dict.get(ingot.image_name, None) is None:
                             self.load_ingot_texture(ingot.image_name)
 
+                        corr_offset = [0, 0]
+                        if draw_dir[0] < 0:
+                            corr_offset[0] += (self.current_size[0] - spacing_offset)
+                        elif draw_dir[1] < 0:
+                            corr_offset[1] += (self.current_size[0] - spacing_offset)
+                        if draw_dir[0] == 0:
+                            corr_offset[0] += self.current_size[0] / 3.5
+                        elif draw_dir[1] == 0:
+                            corr_offset[1] += self.current_size[0] / 3.5
+
                         # get the draw position for the ingot
-                        ingot_draw_pos_x = round(draw_pos_x + (draw_dir[0] * index * spacing_offset))
-                        ingot_draw_pos_y = round(draw_pos_y + (draw_dir[1] * index * spacing_offset))
+                        ingot_draw_pos_x = round(draw_pos_x + (draw_dir[0] * index * spacing_offset) + corr_offset[0])
+                        ingot_draw_pos_y = round(draw_pos_y + (draw_dir[1] * index * spacing_offset) + corr_offset[1])
 
                         # get the texture from the dict
                         ingot_texture = self.ingot_texture_cur_size_dict[ingot.image_name]
