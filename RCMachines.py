@@ -16,7 +16,7 @@ class Processor1(ProcessingMachine):
 
 
 class Processor2(ProcessingMachine):
-    id = 1
+    id = 2
     image_name = "processor2"
 
     size = (1, 1)
@@ -29,7 +29,7 @@ class Processor2(ProcessingMachine):
 
 
 class Extractor1(ExtractingMachine):
-    id = 2
+    id = 3
     image_name = "extractor1"
 
     size = (2, 2)
@@ -42,7 +42,7 @@ class Extractor1(ExtractingMachine):
 
 
 class Extractor2(ExtractingMachine):
-    id = 2
+    id = 4
     image_name = "extractor2"
 
     size = (2, 2)
@@ -55,7 +55,7 @@ class Extractor2(ExtractingMachine):
 
 
 class Extractor3(ExtractingMachine):
-    id = 2
+    id = 5
     image_name = "extractor3"
 
     size = (1, 1)
@@ -68,7 +68,7 @@ class Extractor3(ExtractingMachine):
 
 
 class Rock1(DecorationMachine):
-    id = 3
+    id = 6
     image_name = "rock"
 
     size = (1, 1)
@@ -77,6 +77,9 @@ class Rock1(DecorationMachine):
 
 
 class Conveyor1(ConveyorMachine):
+    id = 7
+    image_name = "conveyor1"
+
     size = (1, 1)
     max_capacity = 10
     speed = 10
