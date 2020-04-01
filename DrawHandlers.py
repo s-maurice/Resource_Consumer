@@ -61,7 +61,7 @@ class ConveyorDrawHandler(MachineDrawHandler):
     # class for handling the drawing of conveyor machines
     # possibly implement some sort of animation
     # will also need to draw the ingots on the conveyor
-    base_image_location = "mineindustry_sprites/conveyors/{}.png"
+    base_image_location = "mineindustry_sprites/machines/{}.png"
 
 
 class BackgroundDrawHandler(object):
