@@ -49,7 +49,7 @@ class BaseDrawHandler(pygame.sprite.Sprite):
             # calculate the rotation difference
             rot_difference = rotation - self.rotation
 
-            self.full_size_image = pygame.transform.rotate(self.full_size_image, 90*rot_difference)
+            self.full_size_image = pygame.transform.rotate(self.full_size_image, -90*rot_difference)
             self.rotation = rotation
 
 
@@ -187,7 +187,7 @@ class MachineDrawHandler2(object):
 
             # handle machine rotation - for machines this is done every frame
             if machine.rotation != 0:
-                machine_texture = pygame.transform.rotate(machine_texture, machine.rotation * 90)
+                machine_texture = pygame.transform.rotate(machine_texture, -machine.rotation * 90)
 
             # draw to surface
             surface.blit(machine_texture, (draw_pos_x, draw_pos_y))
@@ -257,9 +257,9 @@ class BackgroundDrawHandler2(object):
         # copy the full-size texture dicts to the current size ones
         # the cur_size_dicts will store a list for every rotation - for speed
         for key, item in self.bg_texture_dict.items():
-            self.bg_texture_cur_size_dict[key] = [pygame.transform.rotate(item, i*90) for i in range(4)]
+            self.bg_texture_cur_size_dict[key] = [pygame.transform.rotate(item, -i*90) for i in range(4)]
         for key, item in self.bga_texture_dict.items():
-            self.bga_texture_cur_size_dict[key] = [pygame.transform.rotate(item, i*90) for i in range(4)]
+            self.bga_texture_cur_size_dict[key] = [pygame.transform.rotate(item, -i*90) for i in range(4)]
 
     def load_new_bg_texture(self, texture_id):
         # takes texture id of a background texture, loads it, and adds it to the texture dict
@@ -287,7 +287,7 @@ class BackgroundDrawHandler2(object):
                 # scale the texture
                 scaled_texture = pygame.transform.scale(item, (cur_new_size_x, cur_new_size_y))
                 # rotate the texture for the stored rotations
-                self.bg_texture_cur_size_dict[key] = [pygame.transform.rotate(scaled_texture, i*90) for i in range(4)]
+                self.bg_texture_cur_size_dict[key] = [pygame.transform.rotate(scaled_texture, -i*90) for i in range(4)]
 
             for key, item in self.bga_texture_dict.items():
                 # get the size ratio - 2*2 tiles are 100*100px instead of 50*50px, so appropriate scaling
@@ -297,7 +297,7 @@ class BackgroundDrawHandler2(object):
                 # scale the texture
                 scaled_texture = pygame.transform.scale(item, (cur_new_size_x, cur_new_size_y))
                 # rotate the texture for the stored rotations
-                self.bga_texture_cur_size_dict[key] = [pygame.transform.rotate(scaled_texture, i*90) for i in range(4)]
+                self.bga_texture_cur_size_dict[key] = [pygame.transform.rotate(scaled_texture, -i*90) for i in range(4)]
 
         # iterate through the map and draw using the dict of loaded textures
         for y in range(self.size[1]):
