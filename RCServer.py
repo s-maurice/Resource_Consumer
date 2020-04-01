@@ -3,7 +3,7 @@ import json
 import hashlib
 
 from RCGame import ResourceConsumerGame
-from RCMachines import machine_from_json
+from RCMachines import machine_from_json, Conveyor1
 from RCMapTypes import RandomMap
 from RCResources import Copper, Titanium, Sand, Glass
 from RateHandlers import NetworkRateHandler, GameRateHandler
@@ -191,6 +191,22 @@ if __name__ == "__main__":
     rcs.rcg.inventory[Titanium] = 1000
     rcs.rcg.inventory[Sand] = 1000
     rcs.rcg.inventory[Glass] = 1000
+
+    conv = Conveyor1((5, 5), 2)
+    print(conv.input_item(Copper))
+    rcs.rcg.build_machine(conv)
+
+    conv = Conveyor1((7, 7), 3)
+    print(conv.input_item(Copper))
+    rcs.rcg.build_machine(conv)
+
+    conv = Conveyor1((10, 10), 1)
+    print(conv.input_item(Copper))
+    rcs.rcg.build_machine(conv)
+
+    conv = Conveyor1((12, 12), 0)
+    print(conv.input_item(Copper))
+    rcs.rcg.build_machine(conv)
 
     rcs.set_hashed_password("yeet")
     asyncio.run(rcs.main())
