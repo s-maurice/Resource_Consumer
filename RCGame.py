@@ -1,9 +1,6 @@
 import numpy as np
 
-from RCMachineTypes import *
 from RCMachines import *
-from RCResourceTypes import *
-from RCResources import *
 from RCMapTypes import RandomMap, RCMapBase
 
 

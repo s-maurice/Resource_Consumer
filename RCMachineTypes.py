@@ -1,4 +1,3 @@
-from DrawHandlers import MachineDrawHandler, ConveyorDrawHandler
 from RCResourceTypes import IngotResource
 from RCResources import EmptyIngotResource
 
@@ -30,7 +29,7 @@ class GenericMachine(object):
 
         self.output_callback = None  # callback func to RCGame, used when outputting
 
-        self.draw_handler = MachineDrawHandler(self.image_name, position, rotation)
+        # self.draw_handler = MachineDrawHandler(self.image_name, position, rotation)
 
     def get_tiles_occupied(self):
         # returns a list of the tiles (x, y) occupied by this machine
@@ -207,7 +206,7 @@ class ConveyorMachine(GenericMachine):
         [self.inventory.append(EmptyIngotResource) for _ in range(self.max_capacity)]  # pre-populate with empty
         self.cur_tick_inputted = False
 
-        self.draw_handler = ConveyorDrawHandler(self.image_name, self.position, rotation)
+        # self.draw_handler = ConveyorDrawHandler(self.image_name, self.position, rotation)
 
     def get_tiles_outputted_to(self):
         # gets the coordinates of the block that this conveyor outputs to - override for list of single position
