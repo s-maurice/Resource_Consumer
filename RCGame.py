@@ -1,7 +1,7 @@
 import numpy as np
 
-from RCMachines import *
-from RCMapTypes import RandomMap, RCMapBase
+from RCMachineTypes import GenericMachine, ProcessingMachine
+from RCMapTypes import RCMapBase
 
 
 class ResourceConsumerGame(object):
@@ -108,12 +108,13 @@ class ResourceConsumerGame(object):
     def tick_game(self):
         # called every game tick, ticks all the machines and increments the tick
 
+        # try to output to valid machines
         for machine in self.placed_objects:
-            if isinstance(machine, ProcessingMachine):
-                machine.output_item()  # machine automatically select machine to output to if able
+            machine.output_item()
+
+        # process machines
         for machine in self.placed_objects:
-            if isinstance(machine, ProcessingMachine):
-                machine.machine_process()  # machines do work
+            machine.machine_process()
 
         self.tick += 1
 
