@@ -231,9 +231,9 @@ class ConveyorMachine(GenericMachine):
 
     def input_item(self, item):
         # accept input to the conveyor, add to queue, set flag that there has been an input this tick
-        if len(self.inventory) < 10:
-            self.inventory.append(item)
-            self.cur_tick_inputted = True  # set flag so tick function knows not to add empty item
+        if issubclass(self.inventory[-1], EmptyIngotResource):  # using issubclass() because class not inited
+            self.inventory[-1] = item
+            # self.cur_tick_inputted = True  # set flag so tick function knows not to add empty item
             return True
         else:
             return False
