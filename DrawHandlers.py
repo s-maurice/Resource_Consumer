@@ -189,18 +189,22 @@ class MachineDrawHandler2(object):
             if machine.rotation != 0:
                 machine_texture = pygame.transform.rotate(machine_texture, machine.rotation * 90)
 
+            # draw to surface
+            surface.blit(machine_texture, (draw_pos_x, draw_pos_y))
+
             # special handling for conveyor machines, need to draw resources as well
             if isinstance(machine, ConveyorMachine):
                 # identify the draw direction, also pre-calculate the amount of offset per ingot
                 draw_dir = [0, 0]
+                spacing_offset = self.current_size[1] / len(machine.inventory)
                 if machine.rotation == 0:
-                    draw_dir[1] -= 1 * self.current_size[1] / len(machine.inventory)
+                    draw_dir[1] -= 1
                 elif machine.rotation == 1:
-                    draw_dir[0] -= 1 * self.current_size[0] / len(machine.inventory)
+                    draw_dir[0] -= 1
                 elif machine.rotation == 2:
-                    draw_dir[1] += 1 * self.current_size[1] / len(machine.inventory)
+                    draw_dir[1] += 1
                 elif machine.rotation == 3:
-                    draw_dir[0] += 1 * self.current_size[0] / len(machine.inventory)
+                    draw_dir[0] += 1
 
                 for index, ingot in enumerate(machine.inventory):
                     if ingot.id != 0:  # ignore EmptyIngotResource
@@ -209,15 +213,12 @@ class MachineDrawHandler2(object):
                             self.load_ingot_texture(ingot.image_name)
 
                         # get the draw position for the ingot
-                        ingot_draw_pos_x = round(draw_pos_x + (self.current_size[0] / 5) + (draw_dir[0] * index))
-                        ingot_draw_pos_y = round(draw_pos_y + (self.current_size[1] / 5) + (draw_dir[1] * index))
+                        ingot_draw_pos_x = round(draw_pos_x + (draw_dir[0] * index * spacing_offset))
+                        ingot_draw_pos_y = round(draw_pos_y + (draw_dir[1] * index * spacing_offset))
 
                         # get the texture from the dict
                         ingot_texture = self.ingot_texture_cur_size_dict[ingot.image_name]
                         surface.blit(ingot_texture, (ingot_draw_pos_x, ingot_draw_pos_y))
-
-            # draw to surface
-            surface.blit(machine_texture, (draw_pos_x, draw_pos_y))
 
 
 class BackgroundDrawHandler2(object):
