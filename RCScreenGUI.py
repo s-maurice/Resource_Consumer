@@ -78,7 +78,7 @@ class GUIButton(object):
         if self.rect.collidepoint(mouse_pos[0], mouse_pos[1]):
             self.hovered = True
             if m_inputs[0]["up_pos"] != [None, None] and m_inputs[0]["down_pos"] != [None, None]:
-                if self.rect.collidepoint(m_inputs[0]["down_pos"][0]):
+                if self.rect.collidepoint(m_inputs[0]["down_pos"][0][0], m_inputs[0]["down_pos"][0][1]):
                     # do what the button does here
                     self.button_pressed()
 
