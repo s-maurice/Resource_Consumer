@@ -137,12 +137,12 @@ class MachineDrawHandler2(object):
         if texture_name != 0:
             image_location = self.ingot_texture_location.format(texture_name)
             image = pygame.image.load(image_location)
-            self.ingot_texture_dict[texture_name] = image_location
+            self.ingot_texture_dict[texture_name] = image
 
             # also load resized version
             cur_image_full_size = image.get_size()
-            cur_size_x = round((cur_image_full_size[0] / 25) * (self.current_size[0] / 50) * 10)
-            cur_size_y = round((cur_image_full_size[1] / 25) * (self.current_size[1] / 50) * 10)
+            cur_size_x = round((cur_image_full_size[0] / 25) * (self.current_size[0] / 50) * 25)
+            cur_size_y = round((cur_image_full_size[1] / 25) * (self.current_size[1] / 50) * 25)
 
             self.ingot_texture_cur_size_dict[texture_name] = pygame.transform.scale(image, (cur_size_x, cur_size_y))
 
@@ -166,8 +166,8 @@ class MachineDrawHandler2(object):
             for key, item in self.ingot_texture_dict.items():
                 # get size ratio
                 cur_image_full_size = item.get_size()
-                cur_new_size_x = round((cur_image_full_size[0] / 25) * (self.current_size[0] / 50) * 10)
-                cur_new_size_y = round((cur_image_full_size[1] / 25) * (self.current_size[1] / 50) * 10)
+                cur_new_size_x = round((cur_image_full_size[0] / 25) * (self.current_size[0] / 50) * 25)
+                cur_new_size_y = round((cur_image_full_size[1] / 25) * (self.current_size[1] / 50) * 25)
                 # scale the texture
                 scaled_texture = pygame.transform.scale(item, (cur_new_size_x, cur_new_size_y))
                 self.ingot_texture_cur_size_dict[key] = scaled_texture
@@ -204,6 +204,10 @@ class MachineDrawHandler2(object):
 
                 for index, ingot in enumerate(machine.inventory):
                     if ingot.id != 0:  # ignore EmptyIngotResource
+                        # load ingot texture if not loaded
+                        if self.ingot_texture_dict.get(ingot.image_name, None) is None:
+                            self.load_ingot_texture(ingot.image_name)
+
                         # get the draw position for the ingot
                         ingot_draw_pos_x = round(draw_pos_x + (self.current_size[0] / 5) + (draw_dir[0] * index))
                         ingot_draw_pos_y = round(draw_pos_y + (self.current_size[1] / 5) + (draw_dir[1] * index))
