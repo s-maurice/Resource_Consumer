@@ -2,7 +2,7 @@ import math
 
 import pygame
 
-from DrawHandlers import MachineDrawHandler2, SelectionDrawHandler
+from DrawHandlers import MachineDrawHandler2, SelectionDrawHandler, BackgroundDrawHandler2
 from RateHandlers import FrameRateHandler
 from InputHandler import InputHandler
 from RCGame import ResourceConsumerGame, GenericMachine
@@ -56,6 +56,9 @@ class RCScreen(object):
         # run flag for main
         self.run = False
 
+        self.background_draw_handler = BackgroundDrawHandler2(self.rcg.game_map.size,
+                                                              self.rcg.game_map.background_map,
+                                                              self.rcg.game_map.background_addition_map)
         self.machine_draw_handler = MachineDrawHandler2(self.rcg.placed_objects)
         self.selection_draw_handler = SelectionDrawHandler()
 
@@ -69,7 +72,7 @@ class RCScreen(object):
         self.hud_surface.fill((0, 0, 0, 0))  # alpha value of 0 needed
 
         # draw the background
-        self.rcg.game_map.draw_handler.draw_background(self.bg_surface, self.offsets, (self.tile_size, self.tile_size))
+        self.background_draw_handler.draw_background(self.bg_surface, self.offsets, (self.tile_size, self.tile_size))
 
         # draw the machines
         # MachineDrawHandler

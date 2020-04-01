@@ -1,7 +1,5 @@
 import numpy as np
 
-from DrawHandlers import BackgroundDrawHandler, BackgroundDrawHandler2
-
 
 class RCMapBase(object):
     id = 0
@@ -17,11 +15,6 @@ class RCMapBase(object):
         self.size = size
         self.background_map = background_map
         self.background_addition_map = background_addition_map
-
-        if self.size[0] > 0 and self.size[1] > 0:
-            # only want to create draw handlers if map exists
-            # self.draw_handler = BackgroundDrawHandler(self.size, self.background_map, self.background_addition_map)
-            self.draw_handler = BackgroundDrawHandler2(self.size, self.background_map, self.background_addition_map)
 
     def to_json_serialisable(self):
         # returns a serialisable version of itself that can be rebuilt
