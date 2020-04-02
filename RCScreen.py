@@ -2,7 +2,7 @@ import math
 
 import pygame
 
-from DrawHandlers import MachineDrawHandler2, SelectionDrawHandler, BackgroundDrawHandler2
+from DrawHandlers import MachineDrawHandler2, SelectionDrawHandler, BackgroundDrawHandler2, MachineHologramDrawHandler
 from RateHandlers import FrameRateHandler
 from InputHandler import InputHandler
 from RCGame import ResourceConsumerGame, GenericMachine
@@ -90,6 +90,12 @@ class RCScreen(object):
 
         # draw the gui
         self.gui.draw(self.hud_surface)
+
+        # draw the block hologram
+        self.block_hologram_draw_handler.draw(self.selection_surface,
+                                              (self.tile_size, self.tile_size),
+                                              pygame.mouse.get_pos(),
+                                              self.selected_machine)
 
         # Update screen surface
         self.screen.blit(self.bg_surface, (0, 0))

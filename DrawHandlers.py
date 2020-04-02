@@ -405,6 +405,60 @@ class SelectionDrawHandler(object):
                              self.mouse_sel_width)
 
 
+class MachineHologramDrawHandler(object):
+    # draws a opaque version of the selected block where the mouse is
+    # quite similar to MachineDrawHandler2
+    machine_image_location = "mineindustry_sprites/machines/{}.png"
+    alpha = 175
+
+    def __init__(self, current_tile_size):
+        self.machine_texture_full_size = None
+        self.machine_texture_current_size = None
+
+        self.machine_id = 0
+
+        self.current_tile_size = current_tile_size
+
+    def draw(self, surface, size, mouse_pos, selected_machine):
+        # draws the selected_machine onto the surface centered on the mouse_pos
+        if selected_machine is not None:
+            # check if new selection, load new image
+            if self.machine_id != selected_machine.id:
+                self.machine_id = selected_machine.id
+
+                # load full size
+                machine_image_location = self.machine_image_location.format(selected_machine.image_name)
+                image = pygame.image.load(machine_image_location)
+                # image.set_alpha(self.alpha)  # need to have alpha channel
+                self.machine_texture_full_size = image
+
+                # also save resized version - special handing to preserve size of larger images
+                cur_image_full_size = image.get_size()
+                cur_size_x = round((cur_image_full_size[0] / 50) * (self.current_tile_size[0] / 50) * 50)
+                cur_size_y = round((cur_image_full_size[1] / 50) * (self.current_tile_size[1] / 50) * 50)
+
+                self.machine_texture_current_size = pygame.transform.scale(image, (cur_size_x, cur_size_y))
+
+            # check for size change, resize
+            if size != self.current_tile_size:
+                self.current_tile_size = size
+
+                # get the size ratio - 2*2 tiles are 100*100px instead of 50*50px, so appropriate scaling
+                cur_image_full_size = self.machine_texture_full_size.get_size()
+                cur_new_size_x = round((cur_image_full_size[0] / 50) * (size[0] / 50) * 50)
+                cur_new_size_y = round((cur_image_full_size[1] / 50) * (size[1] / 50) * 50)
+                # scale the texture
+                scaled_texture = pygame.transform.scale(self.machine_texture_full_size, (cur_new_size_x, cur_new_size_y))
+                self.machine_texture_current_size = scaled_texture
+
+            # get draw pos
+            draw_pos_x = mouse_pos[0] - size[0]/2
+            draw_pos_y = mouse_pos[1] - size[1]/2
+
+            # draw to surface
+            surface.blit(self.machine_texture_current_size, (draw_pos_x, draw_pos_y))
+
+
 class BackgroundTileDrawHandler(BaseDrawHandler):
     # class for handling the drawing of background tiles
     base_image_location = "mineindustry_sprites/background/{}.png"
