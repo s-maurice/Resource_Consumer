@@ -341,20 +341,22 @@ class BackgroundDrawHandler2(object):
 
 class SelectionDrawHandler(object):
     # class for handling the drawing of selected tiles on the map
-    def __init__(self):
-        self.tile_selection_colour = (255, 0, 0)
-        self.mouse_selection_colour = (100, 0, 0)
 
-        # selection widths
-        self.tile_sel_width = 3
-        self.tile_sel_width_ratio = 13
-        self.tile_sel_min_width = 1
+    # colours
+    tile_selection_colour = (255, 0, 0)
+    mouse_selection_colour = (100, 0, 0)
 
-        self.mouse_sel_width = 2
-        self.mouse_sel_width_ratio = 13
-        self.mouse_sel_min_width = 1
+    # selection widths
+    tile_sel_width = 3
+    tile_sel_width_ratio = 13
+    tile_sel_min_width = 1
 
-        self.current_size = (50, 50)
+    mouse_sel_width = 2
+    mouse_sel_width_ratio = 13
+    mouse_sel_min_width = 1
+
+    def __init__(self, current_size):
+        self.current_size = current_size
 
     def draw(self, surface, offsets, size, selection):
         # draws the selections onto the given surface, mouse_input_down and mouse_input_cur are lists of tuples, for

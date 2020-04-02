@@ -60,7 +60,7 @@ class RCScreen(object):
                                                               self.rcg.game_map.background_map,
                                                               self.rcg.game_map.background_addition_map)
         self.machine_draw_handler = MachineDrawHandler2(self.rcg.placed_objects)
-        self.selection_draw_handler = SelectionDrawHandler()
+        self.selection_draw_handler = SelectionDrawHandler((self.tile_size, self.tile_size))
 
     def draw(self):
         # draw a single frame of the game
