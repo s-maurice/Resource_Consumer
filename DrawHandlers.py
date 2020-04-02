@@ -102,7 +102,7 @@ class MachineDrawHandler2(object):
     machine_texture_location = "mineindustry_sprites/machines/{}.png"
     ingot_texture_location = "mineindustry_sprites/resources/ingot/{}.png"
 
-    def __init__(self, machine_list):
+    def __init__(self, machine_list, current_tile_size):
         self.machine_list = machine_list
 
         self.machine_texture_dict = {}
@@ -111,7 +111,7 @@ class MachineDrawHandler2(object):
         self.ingot_texture_dict = {}
         self.ingot_texture_cur_size_dict = {}
 
-        self.current_size = (50, 50)
+        self.current_tile_size = current_tile_size
 
         # on init, iterate over machines and generate a texture dict
         for machine in machine_list:
@@ -127,8 +127,8 @@ class MachineDrawHandler2(object):
 
             # also load resized version - special handing to preserve size of larger images
             cur_image_full_size = image.get_size()
-            cur_size_x = round((cur_image_full_size[0] / 50) * (self.current_size[0] / 50) * 50)
-            cur_size_y = round((cur_image_full_size[1] / 50) * (self.current_size[1] / 50) * 50)
+            cur_size_x = round((cur_image_full_size[0] / 50) * (self.current_tile_size[0] / 50) * 50)
+            cur_size_y = round((cur_image_full_size[1] / 50) * (self.current_tile_size[1] / 50) * 50)
 
             self.machine_texture_cur_size_dict[texture_name] = pygame.transform.scale(image, (cur_size_x, cur_size_y))
 
@@ -141,8 +141,8 @@ class MachineDrawHandler2(object):
 
             # also load resized version
             cur_image_full_size = image.get_size()
-            cur_size_x = round((cur_image_full_size[0] / 25) * (self.current_size[0] / 50) * 25)
-            cur_size_y = round((cur_image_full_size[1] / 25) * (self.current_size[1] / 50) * 25)
+            cur_size_x = round((cur_image_full_size[0] / 25) * (self.current_tile_size[0] / 50) * 25)
+            cur_size_y = round((cur_image_full_size[1] / 25) * (self.current_tile_size[1] / 50) * 25)
 
             self.ingot_texture_cur_size_dict[texture_name] = pygame.transform.scale(image, (cur_size_x, cur_size_y))
 
@@ -150,8 +150,8 @@ class MachineDrawHandler2(object):
         # draws all the machines onto the surface
 
         # if size changed, handle resizing
-        if size != self.current_size:
-            self.current_size = size
+        if size != self.current_tile_size:
+            self.current_tile_size = size
             # handle machine textures
             for key, item in self.machine_texture_dict.items():
                 # get the size ratio - 2*2 tiles are 100*100px instead of 50*50px, so appropriate scaling
@@ -166,8 +166,8 @@ class MachineDrawHandler2(object):
             for key, item in self.ingot_texture_dict.items():
                 # get size ratio
                 cur_image_full_size = item.get_size()
-                cur_new_size_x = round((cur_image_full_size[0] / 25) * (self.current_size[0] / 50) * 25)
-                cur_new_size_y = round((cur_image_full_size[1] / 25) * (self.current_size[1] / 50) * 25)
+                cur_new_size_x = round((cur_image_full_size[0] / 25) * (self.current_tile_size[0] / 50) * 25)
+                cur_new_size_y = round((cur_image_full_size[1] / 25) * (self.current_tile_size[1] / 50) * 25)
                 # scale the texture
                 scaled_texture = pygame.transform.scale(item, (cur_new_size_x, cur_new_size_y))
                 self.ingot_texture_cur_size_dict[key] = scaled_texture
@@ -179,8 +179,8 @@ class MachineDrawHandler2(object):
                 self.load_machine_texture(machine.image_name)
 
             # get the draw position
-            draw_pos_x = machine.position[0] * self.current_size[0] + offsets[0]
-            draw_pos_y = machine.position[1] * self.current_size[1] + offsets[1]
+            draw_pos_x = machine.position[0] * self.current_tile_size[0] + offsets[0]
+            draw_pos_y = machine.position[1] * self.current_tile_size[1] + offsets[1]
 
             # get the texture from the dict
             machine_texture = self.machine_texture_cur_size_dict[machine.image_name]
@@ -196,7 +196,7 @@ class MachineDrawHandler2(object):
             if isinstance(machine, ConveyorMachine):
                 # identify the draw direction, also pre-calculate the amount of offset per ingot
                 draw_dir = [0, 0]
-                spacing_offset = self.current_size[1] / len(machine.inventory)
+                spacing_offset = self.current_tile_size[1] / len(machine.inventory)
                 if machine.rotation == 0:
                     draw_dir[1] += 1
                 elif machine.rotation == 1:
@@ -215,13 +215,13 @@ class MachineDrawHandler2(object):
                         # handle correctional offsets
                         corr_offset = [0, 0]
                         if draw_dir[0] < 0:
-                            corr_offset[0] += (self.current_size[0] - spacing_offset)
+                            corr_offset[0] += (self.current_tile_size[0] - spacing_offset)
                         elif draw_dir[1] < 0:
-                            corr_offset[1] += (self.current_size[0] - spacing_offset)
+                            corr_offset[1] += (self.current_tile_size[0] - spacing_offset)
                         if draw_dir[0] == 0:
-                            corr_offset[0] += self.current_size[0] / 3.5
+                            corr_offset[0] += self.current_tile_size[0] / 3.5
                         elif draw_dir[1] == 0:
-                            corr_offset[1] += self.current_size[0] / 3.5
+                            corr_offset[1] += self.current_tile_size[0] / 3.5
 
                         # get the draw position for the ingot
                         ingot_draw_pos_x = round(draw_pos_x + (draw_dir[0] * index * spacing_offset) + corr_offset[0])
@@ -237,26 +237,26 @@ class BackgroundDrawHandler2(object):
     bg_texture_location = "mineindustry_sprites/background/{}.png"
     bga_texture_location = "mineindustry_sprites/background_additions/{}.png"
 
-    def __init__(self, size, background_map, background_addition_map):
-        self.size = size
+    def __init__(self, map_size, background_map, background_addition_map, current_tile_size):
+        self.map_size = map_size
 
         self.background_map = background_map
         self.background_addition_map = background_addition_map
 
         # generate the random rotation maps
-        self.background_rotation_map = np.random.randint(0, 4, size=size)
-        self.background_addition_rotation_map = np.random.randint(0, 4, size=size)
+        self.background_rotation_map = np.random.randint(0, 4, size=map_size)
+        self.background_addition_rotation_map = np.random.randint(0, 4, size=map_size)
 
         self.bg_texture_dict = {}
         self.bga_texture_dict = {}
 
         self.bg_texture_cur_size_dict = {}
         self.bga_texture_cur_size_dict = {}
-        self.current_size = (50, 50)
+        self.current_tile_size = current_tile_size
 
         # on init, iterate over both maps to build texture dicts
-        for y in range(self.size[1]):
-            for x in range(self.size[0]):
+        for y in range(self.map_size[1]):
+            for x in range(self.map_size[0]):
                 bg_item = self.background_map[x, y]
                 bga_item = self.background_addition_map[x, y]
 
@@ -288,8 +288,8 @@ class BackgroundDrawHandler2(object):
 
     def draw_background(self, surface, offsets, size):
         # update the size if there has been a change
-        if size != self.current_size:
-            self.current_size = size
+        if size != self.current_tile_size:
+            self.current_tile_size = size
             for key, item in self.bg_texture_dict.items():
                 # get the size ratio - 2*2 tiles are 100*100px instead of 50*50px, so appropriate scaling
                 cur_image_full_size = item.get_size()
@@ -311,12 +311,12 @@ class BackgroundDrawHandler2(object):
                 self.bga_texture_cur_size_dict[key] = [pygame.transform.rotate(scaled_texture, -i*90) for i in range(4)]
 
         # iterate through the map and draw using the dict of loaded textures
-        for y in range(self.size[1]):
-            for x in range(self.size[0]):
+        for y in range(self.map_size[1]):
+            for x in range(self.map_size[0]):
                 # can add offscreen checking to avoid drawing offscreen textures
                 # can refer to rotation map to change up textures
-                draw_pos_x = x * self.current_size[0] + offsets[0]
-                draw_pos_y = y * self.current_size[1] + offsets[1]
+                draw_pos_x = x * self.current_tile_size[0] + offsets[0]
+                draw_pos_y = y * self.current_tile_size[1] + offsets[1]
 
                 # get tile texture id
                 bg_item = self.background_map[x, y]
@@ -355,8 +355,8 @@ class SelectionDrawHandler(object):
     mouse_sel_width_ratio = 13
     mouse_sel_min_width = 1
 
-    def __init__(self, current_size):
-        self.current_size = current_size
+    def __init__(self, current_tile_size):
+        self.current_tile_size = current_tile_size
 
     def draw(self, surface, offsets, size, selection):
         # draws the selections onto the given surface, mouse_input_down and mouse_input_cur are lists of tuples, for
@@ -367,8 +367,8 @@ class SelectionDrawHandler(object):
 
         # only draw if there is a selection
         if mouse_input_down != [None, None] and mouse_input_cur != [None, None]:
-            if size != self.current_size:
-                self.current_size = size
+            if size != self.current_tile_size:
+                self.current_tile_size = size
                 self.tile_sel_width = max(size[0] // self.tile_sel_width_ratio, self.tile_sel_min_width)
                 self.mouse_sel_width = max(size[0] // self.mouse_sel_width_ratio, self.mouse_sel_min_width)
 

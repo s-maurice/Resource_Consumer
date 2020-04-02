@@ -60,7 +60,7 @@ class ResourceConsumerClient(object):
                     print(map_id)
                     if map_id == 0:
                         # custom map, need to build
-                        size = game_map_dict["size"]
+                        size = game_map_dict["map_size"]
                         background_map = np.array(game_map_dict["bg"])
                         background_addition_map = np.array(game_map_dict["bga"])
                         map_obj = SentMap(size, background_map, background_addition_map)

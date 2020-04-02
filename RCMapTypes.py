@@ -22,7 +22,7 @@ class RCMapBase(object):
 
         details = {
             "id": self.id,
-            "size": self.size,
+            "map_size": self.size,
             "bg": self.background_map.tolist(),
             "bga": self.background_addition_map.tolist()
         }

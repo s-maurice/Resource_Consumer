@@ -58,9 +58,11 @@ class RCScreen(object):
 
         self.background_draw_handler = BackgroundDrawHandler2(self.rcg.game_map.size,
                                                               self.rcg.game_map.background_map,
-                                                              self.rcg.game_map.background_addition_map)
-        self.machine_draw_handler = MachineDrawHandler2(self.rcg.placed_objects)
+                                                              self.rcg.game_map.background_addition_map,
+                                                              (self.tile_size, self.tile_size))
+        self.machine_draw_handler = MachineDrawHandler2(self.rcg.placed_objects, (self.tile_size, self.tile_size))
         self.selection_draw_handler = SelectionDrawHandler((self.tile_size, self.tile_size))
+        self.block_hologram_draw_handler = MachineHologramDrawHandler((self.tile_size, self.tile_size))
 
     def draw(self):
         # draw a single frame of the game
