@@ -46,14 +46,15 @@ class GenericMachine(object):
     def get_tiles_outputted_to(self):
         # returns a list of tiles touching the machine, will return out of bounds of board - need to check outside
         possible_tiles = []
-        for x in range(self.position[0], self.position[0] + self.size[0] - 1):
+        for x in range(self.position[0], self.position[0] + self.size[0]):
             possible_tiles.append((x, self.position[1] - 1))  # all above
-            possible_tiles.append((x, self.position[1] + self.size[1] - 1))  # all below
+            possible_tiles.append((x, self.position[1] + self.size[1]))  # all below
 
-        for y in range(self.position[1], self.position[1] + self.size[1] - 1):
+        for y in range(self.position[1], self.position[1] + self.size[1]):
             possible_tiles.append((y, self.position[0] - 1))  # all left
-            possible_tiles.append((y, self.position[0] + self.size[0] - 1))  # all right
+            possible_tiles.append((y, self.position[0] + self.size[0]))  # all right
 
+        print(possible_tiles)
         return possible_tiles
 
     def shift_output_machines(self):
