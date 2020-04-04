@@ -87,7 +87,7 @@ class RandomMap(RCMapBase):
         for index, value in np.ndenumerate(addition_uniform):
             if value < 0.1:
                 background_addition_map[index] = 1
-            elif 0.3 <= value < 0.4:  # possibly only use the top and bottom of the uniform map - regenerate new uniform
+            elif 0.3 <= value < 0.35:  # possibly only use the top and bottom of uniform map - regenerate new uniform
                 background_addition_map[index] = 2
             elif 0.9 <= value:
                 background_addition_map[index] = 3
