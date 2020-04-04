@@ -258,8 +258,13 @@ class ConveyorMachine(GenericMachine):
         # shifts items on conveyor forwards if there are EmptyIngotResources at the front
         if len(self.inventory) < self.max_capacity:
             self.inventory.append(EmptyIngotResource)
-        if issubclass(self.inventory[0], EmptyIngotResource):  # use issubclass() because not init
-            self.inventory.pop(0)
+
+        # pop first occurrence of empty ingot
+        for index, item in enumerate(self.inventory):  # use issubclass() because not init
+            if issubclass(item, EmptyIngotResource):
+                self.inventory.pop(index)
+                break
+
         if len(self.inventory) < self.max_capacity:
             self.inventory.append(EmptyIngotResource)
         # at the end, increment the timer
