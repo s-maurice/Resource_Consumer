@@ -416,10 +416,11 @@ class MachineHologramDrawHandler(object):
         self.machine_texture_current_size = None
 
         self.machine_id = 0
+        self.rotation = 0
 
         self.current_tile_size = current_tile_size
 
-    def draw(self, surface, size, mouse_pos, selected_machine):
+    def draw(self, surface, size, mouse_pos, selected_machine, selected_rotation):
         # draws the selected_machine onto the surface centered on the mouse_pos
         if selected_machine is not None:
             # check if new selection, load new image
@@ -442,6 +443,7 @@ class MachineHologramDrawHandler(object):
             # check for size change, resize
             if size != self.current_tile_size:
                 self.current_tile_size = size
+                self.rotation = 0  # rotation is 0 on load
 
                 # get the size ratio - 2*2 tiles are 100*100px instead of 50*50px, so appropriate scaling
                 cur_image_full_size = self.machine_texture_full_size.get_size()
@@ -450,6 +452,16 @@ class MachineHologramDrawHandler(object):
                 # scale the texture
                 scaled_texture = pygame.transform.scale(self.machine_texture_full_size, (cur_new_size_x, cur_new_size_y))
                 self.machine_texture_current_size = scaled_texture
+
+            # check for rotation change, rotate
+            if self.rotation != selected_rotation:
+                rot_amount = selected_rotation - self.rotation
+                self.rotation = selected_rotation
+
+                self.machine_texture_full_size = pygame.transform.rotate(self.machine_texture_full_size,
+                                                                         -rot_amount*90)
+                self.machine_texture_current_size = pygame.transform.rotate(self.machine_texture_current_size,
+                                                                            -rot_amount*90)
 
             # get draw pos
             draw_pos_x = mouse_pos[0] - size[0]/2

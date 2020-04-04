@@ -33,9 +33,10 @@ class RCScreen(object):
         self.hud_surface = pygame.Surface(self.window_size, pygame.SRCALPHA)  # per pixel alpha
         self.selection_surface = pygame.Surface(self.window_size, pygame.SRCALPHA)  # per pixel alpha
 
-        # set up GUI
-        self.selected_machine = None  # used for the gui to callback to
+        # set up GUI and placements
         self.gui = RCScreenGUI(self.rcg, self.set_selected_machine)
+        self.selected_machine = None  # used for the gui to callback to
+        self.selected_rotation = 0
 
         # set up selection
         self.selection = {"down": [None, None], "cur": [None, None]}
@@ -95,7 +96,8 @@ class RCScreen(object):
         self.block_hologram_draw_handler.draw(self.selection_surface,
                                               (self.tile_size, self.tile_size),
                                               pygame.mouse.get_pos(),
-                                              self.selected_machine)
+                                              self.selected_machine,
+                                              self.selected_rotation)
 
         # Update screen surface
         self.screen.blit(self.bg_surface, (0, 0))
@@ -158,17 +160,22 @@ class RCScreen(object):
         camera_offset_adjust = [0, 0]
         camera_zoom_adjust = 0
         if kb_inputs.get("pan_left"):
-            camera_offset_adjust[0] -= 1
-        if kb_inputs.get("pan_right"):
             camera_offset_adjust[0] += 1
+        if kb_inputs.get("pan_right"):
+            camera_offset_adjust[0] -= 1
         if kb_inputs.get("pan_up"):
-            camera_offset_adjust[1] -= 1
-        if kb_inputs.get("pan_down"):
             camera_offset_adjust[1] += 1
+        if kb_inputs.get("pan_down"):
+            camera_offset_adjust[1] -= 1
         if kb_inputs.get("zoom_in"):
             camera_zoom_adjust += 1
         if kb_inputs.get("zoom_out"):
             camera_zoom_adjust -= 1
+
+        if kb_inputs.get("rotate"):
+            self.selected_rotation = (self.selected_rotation + 1) % 4
+            self.input_handler.kb_set_input("rotate", False)
+            print("ROT", self.selected_rotation)
 
         # apply the camera offset and zoom changes
         self.adjust_camera_offset(camera_offset_adjust)
@@ -183,7 +190,7 @@ class RCScreen(object):
                     if m_inputs[0]["down_pos"][1] == m_inputs[0]["up_pos"][1]:  # compare the game pos
                         print("place building at", m_inputs[0]["up_pos"][1], self.selected_machine)
 
-                        machine = self.selected_machine(list(m_inputs[0]["up_pos"][1]), 0)
+                        machine = self.selected_machine(list(m_inputs[0]["up_pos"][1]), self.selected_rotation)
                         if self.rcg.can_build_machine(machine):
                             # add to the staging callback queue so the client can send to server
                             self.callback_outgoing("placements", machine.to_json_serialisable())
