@@ -49,9 +49,50 @@ class SentMap(RCMapBase):
 
 class RandomMap(RCMapBase):
     def __init__(self):
+        from scipy.ndimage import zoom
         size = (20, 20)
-        background_map = np.random.randint(1, 4, size=size, dtype=int)  # bg tiles
-        background_addition_map = np.random.randint(0, 4, size=size, dtype=int)  # bg extras (ores)
+
+        # handle background_map
+        background_map = np.empty(shape=size, dtype=int)
+
+        bg_zoom_ratio = 2  # ensure size is int divisible by ratio
+        bg_uniform_size = (size[0]//bg_zoom_ratio, size[1]//bg_zoom_ratio)  # size before interpolation / zooming
+
+        background_uniform = np.random.uniform(size=bg_uniform_size)
+        background_uniform = zoom(background_uniform, bg_zoom_ratio)
+        assert background_uniform.shape == size
+
+        # iterate through the generated, zoomed background_uniform and apply values to background_map
+        for index, value in np.ndenumerate(background_uniform):
+            if value < 0.3:
+                background_map[index] = 1
+            elif 0.3 <= value < 0.6:
+                background_map[index] = 2
+            elif 0.6 <= value:
+                background_map[index] = 3
+            else:
+                background_map[index] = 0
+
+        # handle ores / background_addition_map
+        background_addition_map = np.empty(shape=size, dtype=int)
+
+        add_zoom_ratio = 4  # ensure size is int divisible by ratio
+        add_uniform_size = (size[0] // add_zoom_ratio, size[1] // add_zoom_ratio)  # size before interpolation / zooming
+
+        addition_uniform = np.random.uniform(size=add_uniform_size)
+        addition_uniform = zoom(addition_uniform, add_zoom_ratio)
+        assert addition_uniform.shape == size
+
+        # iterate through the generated, zoomed background_uniform and apply values to background_map
+        for index, value in np.ndenumerate(addition_uniform):
+            if value < 0.1:
+                background_addition_map[index] = 1
+            elif 0.3 <= value < 0.4:  # possibly only use the top and bottom of the uniform map - regenerate new uniform
+                background_addition_map[index] = 2
+            elif 0.9 <= value:
+                background_addition_map[index] = 3
+            else:
+                background_addition_map[index] = 0
 
         super().__init__(size, background_map, background_addition_map)
 
